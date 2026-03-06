@@ -472,7 +472,7 @@ footer em{color:var(--gold);font-style:normal;}
   border-radius: 20px;
   padding: 18px 22px 16px;
   max-width: 230px;
-  backdrop-filter: blur(6px);
+  backdrop-filter:blur(6px);
   box-shadow: 0 0 40px rgba(245,200,66,.15), 0 20px 60px rgba(0,0,0,.5);
   animation: greetingAppear 1.2s 2s cubic-bezier(.34,1.56,.64,1) both;
   cursor: pointer;
@@ -708,7 +708,7 @@ footer em{color:var(--gold);font-style:normal;}
   gap: 14px;
   padding: 16px 18px 16px 18px;
   border-radius: 18px;
-  backdrop-filter: blur(8px);
+  backdrop-filter:blur(8px);
   pointer-events: all;
   overflow: hidden;
   cursor: pointer;
@@ -1217,7 +1217,7 @@ footer em{color:var(--gold);font-style:normal;}
 /* Edit modal */
 #gw-edit-modal {
   position: fixed; inset: 0; z-index: 99990;
-  background: rgba(6,2,16,.88); backdrop-filter: blur(6px);
+  background: rgba(6,2,16,.88); backdrop-filter:blur(6px);
   display: flex; align-items: center; justify-content: center;
   padding: 16px; opacity: 0; pointer-events: none;
   transition: opacity .35s;
@@ -1804,7 +1804,7 @@ footer em{color:var(--gold);font-style:normal;}
   border-radius: 28px;
   padding: 36px 24px 30px;
   text-align: center;
-  backdrop-filter: blur(8px);
+  backdrop-filter:blur(8px);
   border: 1px solid transparent;
   overflow: hidden;
   z-index: 1;
@@ -2104,371 +2104,6 @@ footer em{color:var(--gold);font-style:normal;}
   opacity: .18;
   white-space: nowrap;
 }
-
-/* ── BADGE CARD ── */
-.badge-card {
-  position: relative;
-  width: clamp(155px,44vw,240px);
-  border-radius: 28px;
-  padding: 0;
-  cursor: default;
-  overflow: hidden;
-  transition: transform .5s cubic-bezier(.34,1.56,.64,1), box-shadow .5s;
-  animation: badgeIn .8s both;
-}
-.badge-card:hover {
-  transform: translateY(-16px) scale(1.04) rotateX(2deg);
-}
-.badge-card:nth-child(1){animation-delay:.08s;}
-.badge-card:nth-child(2){animation-delay:.2s;}
-.badge-card:nth-child(3){animation-delay:.32s;}
-.badge-card:nth-child(4){animation-delay:.44s;}
-@keyframes badgeIn{
-  from{opacity:0;transform:translateY(50px) scale(.92);}
-  to{opacity:1;transform:translateY(0) scale(1);}
-}
-
-/* Card glass layer */
-.badge-inner {
-  position: relative;
-  border-radius: 28px;
-  padding: 36px 24px 30px;
-  text-align: center;
-  backdrop-filter: blur(8px);
-  border: 1px solid transparent;
-  overflow: hidden;
-  z-index: 1;
-  height: 100%;
-}
-
-/* Animated gradient border via pseudo-element */
-.badge-card::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: 30px;
-  z-index: 0;
-  animation: border-rotate 4s linear infinite;
-}
-@keyframes border-rotate {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
-/* ── DIAMOND ── */
-.badge-diamond::before {
-  background: conic-gradient(
-    #a8edff, #00d4ff, #7dd3fc, #e0f7ff, #38bdf8,
-    #a8edff, #00d4ff, #7dd3fc, #e0f7ff, #38bdf8, #a8edff
-  );
-}
-.badge-diamond .badge-inner {
-  background: linear-gradient(160deg, rgba(14,30,60,.92) 0%, rgba(0,60,90,.88) 60%, rgba(14,30,60,.95) 100%);
-  border-color: rgba(56,189,248,.3);
-  box-shadow: 0 0 60px rgba(0,212,255,.2), inset 0 1px 0 rgba(168,232,255,.15);
-}
-.badge-diamond:hover {
-  box-shadow: 0 28px 80px rgba(0,212,255,.45), 0 0 120px rgba(56,189,248,.2);
-}
-.badge-diamond .badge-icon-wrap {
-  background: radial-gradient(circle at 40% 35%, #e0f7ff 0%, #7dd3fc 30%, #0369a1 70%, #0c4a6e 100%);
-  box-shadow: 0 0 40px rgba(0,212,255,.6), 0 0 80px rgba(56,189,248,.3), inset 0 2px 4px rgba(255,255,255,.5);
-}
-.badge-diamond .badge-tier-name { color: #7dd3fc; }
-.badge-diamond .badge-name { 
-  background: linear-gradient(135deg, #e0f7ff, #38bdf8, #7dd3fc, #bae6fd, #e0f7ff);
-}
-.badge-diamond .badge-req-item::before { background: #38bdf8; box-shadow: 0 0 8px #38bdf8; }
-.badge-diamond .badge-difficulty { 
-  background: rgba(56,189,248,.12);
-  border-color: rgba(56,189,248,.3);
-  color: #7dd3fc;
-}
-
-/* ── GOLD ── */
-.badge-gold::before {
-  background: conic-gradient(
-    #f5c842, #fde68a, #f59e0b, #fff8dc, #d97706,
-    #f5c842, #fde68a, #f59e0b, #fff8dc, #d97706, #f5c842
-  );
-}
-.badge-gold .badge-inner {
-  background: linear-gradient(160deg, rgba(40,25,0,.92) 0%, rgba(60,35,0,.88) 60%, rgba(40,25,0,.95) 100%);
-  border-color: rgba(245,200,66,.3);
-  box-shadow: 0 0 50px rgba(245,200,66,.18), inset 0 1px 0 rgba(253,230,138,.15);
-}
-.badge-gold:hover {
-  box-shadow: 0 28px 80px rgba(245,200,66,.4), 0 0 100px rgba(245,200,66,.15);
-}
-.badge-gold .badge-icon-wrap {
-  background: radial-gradient(circle at 40% 35%, #fff8dc 0%, #fde68a 25%, #f5c842 55%, #b8860b 100%);
-  box-shadow: 0 0 40px rgba(245,200,66,.7), 0 0 80px rgba(245,158,11,.3), inset 0 2px 4px rgba(255,255,255,.5);
-}
-.badge-gold .badge-tier-name { color: #fde68a; }
-.badge-gold .badge-name {
-  background: linear-gradient(135deg, #fff8dc, #f5c842, #fde68a, #f59e0b, #fff8dc);
-}
-.badge-gold .badge-req-item::before { background: #f5c842; box-shadow: 0 0 8px #f5c842; }
-.badge-gold .badge-difficulty {
-  background: rgba(245,200,66,.12);
-  border-color: rgba(245,200,66,.3);
-  color: #fde68a;
-}
-
-/* ── SILVER ── */
-.badge-silver::before {
-  background: conic-gradient(
-    #e5e7eb, #f9fafb, #9ca3af, #f3f4f6, #6b7280,
-    #e5e7eb, #f9fafb, #9ca3af, #f3f4f6, #6b7280, #e5e7eb
-  );
-}
-.badge-silver .badge-inner {
-  background: linear-gradient(160deg, rgba(20,20,28,.92) 0%, rgba(30,30,40,.88) 60%, rgba(20,20,28,.95) 100%);
-  border-color: rgba(209,213,219,.25);
-  box-shadow: 0 0 45px rgba(156,163,175,.15), inset 0 1px 0 rgba(243,244,246,.12);
-}
-.badge-silver:hover {
-  box-shadow: 0 28px 80px rgba(209,213,219,.3), 0 0 90px rgba(156,163,175,.12);
-}
-.badge-silver .badge-icon-wrap {
-  background: radial-gradient(circle at 40% 35%, #f9fafb 0%, #e5e7eb 25%, #9ca3af 55%, #4b5563 100%);
-  box-shadow: 0 0 35px rgba(209,213,219,.6), 0 0 70px rgba(156,163,175,.25), inset 0 2px 4px rgba(255,255,255,.4);
-}
-.badge-silver .badge-tier-name { color: #d1d5db; }
-.badge-silver .badge-name {
-  background: linear-gradient(135deg, #f9fafb, #d1d5db, #9ca3af, #e5e7eb, #f9fafb);
-}
-.badge-silver .badge-req-item::before { background: #9ca3af; box-shadow: 0 0 8px #9ca3af; }
-.badge-silver .badge-difficulty {
-  background: rgba(156,163,175,.12);
-  border-color: rgba(156,163,175,.3);
-  color: #d1d5db;
-}
-
-/* ── BRONZE ── */
-.badge-bronze::before {
-  background: conic-gradient(
-    #f59e0b, #fde68a, #d97706, #fed7aa, #92400e,
-    #f59e0b, #fde68a, #d97706, #fed7aa, #92400e, #f59e0b
-  );
-}
-.badge-bronze .badge-inner {
-  background: linear-gradient(160deg, rgba(30,12,0,.92) 0%, rgba(45,20,0,.88) 60%, rgba(30,12,0,.95) 100%);
-  border-color: rgba(245,158,11,.25);
-  box-shadow: 0 0 40px rgba(180,83,9,.18), inset 0 1px 0 rgba(253,211,138,.12);
-}
-.badge-bronze:hover {
-  box-shadow: 0 28px 80px rgba(245,158,11,.35), 0 0 80px rgba(180,83,9,.15);
-}
-.badge-bronze .badge-icon-wrap {
-  background: radial-gradient(circle at 40% 35%, #fde68a 0%, #f59e0b 25%, #d97706 55%, #78350f 100%);
-  box-shadow: 0 0 35px rgba(245,158,11,.6), 0 0 70px rgba(180,83,9,.3), inset 0 2px 4px rgba(255,255,255,.4);
-}
-.badge-bronze .badge-tier-name { color: #fcd34d; }
-.badge-bronze .badge-name {
-  background: linear-gradient(135deg, #fed7aa, #f59e0b, #fde68a, #d97706, #fed7aa);
-}
-.badge-bronze .badge-req-item::before { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
-.badge-bronze .badge-difficulty {
-  background: rgba(245,158,11,.12);
-  border-color: rgba(245,158,11,.3);
-  color: #fcd34d;
-}
-
-/* ── ICON WRAP (medal shape) ── */
-.badge-icon-wrap {
-  position: relative;
-  width: 96px; height: 96px;
-  margin: 0 auto 20px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2.8rem;
-  z-index: 1;
-  transition: transform .4s cubic-bezier(.34,1.56,.64,1);
-}
-.badge-card:hover .badge-icon-wrap {
-  transform: scale(1.15) rotateY(20deg);
-}
-/* spinning halo ring */
-.badge-halo {
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  border: 2px dashed rgba(255,255,255,.18);
-  animation: halo-spin 8s linear infinite;
-}
-@keyframes halo-spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
-.badge-halo-2 {
-  position: absolute;
-  inset: -12px;
-  border-radius: 50%;
-  border: 1px dashed rgba(255,255,255,.08);
-  animation: halo-spin 12s linear infinite reverse;
-}
-
-/* ── BADGE TIER LABEL ── */
-.badge-tier-name {
-  font-size: .68rem;
-  letter-spacing: 5px;
-  text-transform: uppercase;
-  font-family: 'Cinzel', serif;
-  margin-bottom: 6px;
-  opacity: .85;
-}
-
-/* ── BADGE NAME ── */
-.badge-name {
-  font-family: 'Cinzel', serif;
-  font-size: 1.25rem;
-  font-weight: 900;
-  margin-bottom: 16px;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  background-size: 200% auto;
-  animation: badge-name-shine 3s linear infinite;
-  line-height: 1.2;
-}
-@keyframes badge-name-shine {
-  0%{background-position:0% center;}
-  100%{background-position:200% center;}
-}
-
-/* ── DIVIDER ── */
-.badge-sep {
-  width: 100%;
-  height: 1px;
-  margin: 14px 0 18px;
-  border-radius: 1px;
-}
-.badge-diamond .badge-sep { background: linear-gradient(90deg, transparent, rgba(56,189,248,.4), transparent); }
-.badge-gold    .badge-sep { background: linear-gradient(90deg, transparent, rgba(245,200,66,.4), transparent); }
-.badge-silver  .badge-sep { background: linear-gradient(90deg, transparent, rgba(156,163,175,.35), transparent); }
-.badge-bronze  .badge-sep { background: linear-gradient(90deg, transparent, rgba(245,158,11,.35), transparent); }
-
-/* ── REQUIREMENTS ── */
-.badge-req-title {
-  font-size: .68rem;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.35);
-  margin-bottom: 12px;
-  font-family: 'Cinzel', serif;
-}
-.badge-req-list {
-  list-style: none;
-  text-align: right;
-  margin-bottom: 18px;
-}
-.badge-req-item {
-  position: relative;
-  font-size: .78rem;
-  color: rgba(255,255,255,.65);
-  line-height: 1.7;
-  padding-right: 16px;
-  margin-bottom: 5px;
-}
-.badge-req-item::before {
-  content: '';
-  position: absolute;
-  right: 0; top: 50%;
-  transform: translateY(-50%);
-  width: 5px; height: 5px;
-  border-radius: 50%;
-}
-
-/* ── DIFFICULTY BAR ── */
-.badge-difficulty {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 14px;
-  border-radius: 20px;
-  border: 1px solid;
-  font-size: .7rem;
-  font-weight: 700;
-  letter-spacing: .5px;
-  font-family: 'Cinzel', serif;
-}
-
-/* ── SHINE OVERLAY ── */
-.badge-shine {
-  position: absolute;
-  top: -50%; left: -50%;
-  width: 40%; height: 200%;
-  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.07) 50%, transparent 60%);
-  transform: skewX(-20deg);
-  animation: badge-shine-sweep 5s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes badge-shine-sweep {
-  0%   { left: -50%; }
-  50%  { left: 130%; }
-  100% { left: 130%; }
-}
-
-/* floating sparkles */
-.badge-sparkle {
-  position: absolute;
-  pointer-events: none;
-  animation: sparkle-float var(--sf-dur, 3s) ease-in-out infinite;
-  font-size: var(--sf-size, .7rem);
-  opacity: 0;
-}
-@keyframes sparkle-float {
-  0%   { opacity: 0; transform: translateY(0) scale(0); }
-  30%  { opacity: .8; }
-  70%  { opacity: .5; }
-  100% { opacity: 0; transform: translateY(-40px) scale(1.2); }
-}
-
-/* corner crown accent */
-.badge-corner {
-  position: absolute;
-  bottom: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: .55rem;
-  letter-spacing: 4px;
-  font-family: 'Cinzel', serif;
-  opacity: .18;
-  white-space: nowrap;
-}
-
-/* ── NAV LOGIN BUTTON ── */
-.nav-login-btn {
-  display:inline-flex; align-items:center; gap:7px;
-  padding:7px 16px;
-  background:#7c3aed;
-  border-radius:20px; color:#fff;
-  font-size:.82rem; font-weight:700;
-  text-decoration:none; letter-spacing:.3px;
-  transition:all .3s; border:none; cursor:pointer;
-  font-family:'Tajawal',sans-serif;
-  box-shadow:0 4px 14px rgba(88,101,242,.3);
-}
-.nav-login-btn:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(88,101,242,.45); background:#5b21b6; }
-.nav-login-btn svg { width:16px; height:16px; }
-
-/* ── NAV USER CHIP ── */
-.nav-user-chip {
-  display:none; align-items:center; gap:8px;
-  padding:5px 14px 5px 8px;
-  background:rgba(124,58,237,.18);
-  border:1px solid rgba(168,85,247,.25);
-  border-radius:24px; cursor:pointer;
-  transition:all .3s;
-  text-decoration:none;
-}
-.nav-user-chip:hover { background:rgba(124,58,237,.32); border-color:rgba(168,85,247,.5); }
-.nav-user-chip.visible { display:flex; }
-.nav-user-avatar {
-  width:26px; height:26px; border-radius:50%;
-  border:1.5px solid rgba(168,85,247,.5); object-fit:cover;
-}
-.nav-user-name { font-size:.8rem; color:#d8b4fe; font-weight:700; max-width:90px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-.nav-logout-tip { font-size:.65rem; color:rgba(168,85,247,.45); }
-
 /* ══════════════════════════════════════════════════
    LOGIN MODAL CSS
 ══════════════════════════════════════════════════ */
@@ -2995,7 +2630,7 @@ canvas#cvs { position:fixed; inset:0; z-index:0; pointer-events:none; }
   padding: 24px 6% 20px;
   display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
   position: sticky; top: 0; z-index: 10;
-  backdrop-filter: blur(8px);
+  backdrop-filter:blur(8px);
 }
 .mpage-close-btn {
   padding: 10px 18px; border-radius: 12px;
@@ -3178,7 +2813,7 @@ canvas#cvs { position:fixed; inset:0; z-index:0; pointer-events:none; }
 }
 .mpop-badge-chip::before {
   content:''; position:absolute; inset:-2px; border-radius:18px; z-index:0;
-  animation: border-rotate 4s linear infinite;
+  animation: border-rotate 8s linear infinite;
 }
 .mpop-badge-chip:hover { transform: translateY(-3px) scale(1.04); }
 .mpop-badge-chip .mbc-orb {
@@ -3645,91 +3280,76 @@ canvas#cvs { position:fixed; inset:0; z-index:0; pointer-events:none; }
   }
 
 /* ══════════════════════════════════════════════════
-   BADGE PERFORMANCE FIX — Mobile & Low-end devices
+   PERFORMANCE & MOBILE FIX — v3 CLEAN
 ══════════════════════════════════════════════════ */
 
-/* On ALL devices: reduce badge hover to simple lift only */
-.badge-card:hover {
-  transform: translateY(-8px) scale(1.02) !important;
-}
+/* GPU compositing */
+nav { will-change: transform; contain: layout style; }
+.badge-card, .owner-card, .fc { will-change: transform; contain: layout style paint; }
+.badge-halo, .badge-halo-2, .badge-card::before { will-change: transform; }
 
-/* Slow down heavy animations */
+/* Slow down heavy desktop animations */
 .badge-halo   { animation-duration: 20s !important; }
 .badge-halo-2 { animation-duration: 30s !important; }
 .badge-card::before { animation-duration: 8s !important; }
 .badge-name   { animation-duration: 6s !important; }
 .badge-shine  { animation-duration: 8s !important; }
 
-/* On mobile: kill ALL badge animations completely */
-@media (max-width: 768px), (hover: none) {
-  .badge-halo,
-  .badge-halo-2        { animation: none !important; display: none !important; }
-  .badge-shine         { animation: none !important; display: none !important; }
-  .badge-sparkle       { animation: none !important; display: none !important; }
-  .badge-name          { animation: none !important; background-size: auto !important; }
-  .badge-card::before  { animation: none !important; }
-  .badge-inner         { backdrop-filter: none !important; }
-  .badge-card          { 
-    animation: badgeIn .4s both !important;
-    transition: none !important;
-  }
-  .badge-card:hover    { transform: none !important; }
-  .badge-card:active   { transform: scale(.97) !important; }
-}
-
-/* Canvas: reduce on all devices */
+/* ── MOBILE: kill everything expensive ── */
 @media (max-width: 768px) {
+  /* Hide canvas entirely */
   #cvs { display: none !important; }
   .bg-grad { position: absolute !important; }
 
-  /* Remove all backdrop-filter on mobile */
-  nav,
-  .apanel,
-  .badge-inner,
-  .owner-card,
-  .fc,
-  .scard,
-  #loginModalBox,
-  #mobileMenu,
-  .elite-overlay-inner,
-  .racc-panel { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  /* Remove ALL backdrop-filter on mobile */
+  * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
 
-  /* Kill nav blur */
-  nav { background: rgba(15,5,32,.97) !important; }
+  /* Solid nav background instead of blur */
+  nav { background: rgba(10,3,24,.97) !important; }
 
-  /* Kill all spinning/floating on mobile */
-  .crown           { animation: none !important; }
-  .logo-ring       { animation: none !important; }
-  .card-border-top { animation: none !important; }
-  .card-shine      { display: none !important; }
+  /* Kill badge animations */
+  .badge-halo, .badge-halo-2 { display: none !important; }
+  .badge-shine                { display: none !important; }
+  .badge-sparkle              { display: none !important; }
+  .badge-card::before         { animation: none !important; }
+  .badge-name                 { animation: none !important; }
+  .badge-card                 { animation: none !important; transition: none !important; }
+  .badge-card:active          { transform: scale(.97) !important; }
+  .badge-card:hover           { transform: none !important; }
 
   /* Kill owner card effects */
-  .owner-card::before,
-  .owner-card::after { display: none !important; }
-  .owner-card { transition: none !important; animation: none !important; }
+  .owner-card::before, .owner-card::after { display: none !important; }
+  .owner-card { transition: none !important; animation-duration: .3s !important; }
 
   /* Kill feature card effects */
   .fc::after { display: none !important; }
-  .fc { transition: none !important; }
+  .fc { transition: background .3s !important; }
 
-  /* Kill all box-shadows on mobile (GPU heavy) */
-  .fc, .scard, .badge-card, .owner-card { box-shadow: 0 2px 12px rgba(0,0,0,.4) !important; }
+  /* Kill hero float */
+  .crown { animation: none !important; }
+
+  /* Kill card shine effects */
+  .card-border-top, .card-shine { display: none !important; }
+  .logo-ring { animation-duration: 10s !important; }
+
+  /* Simplify box-shadows */
+  .badge-card, .owner-card, .fc, .scard {
+    box-shadow: 0 2px 12px rgba(0,0,0,.5) !important;
+  }
+
+  /* Hero font smaller */
+  h1 { font-size: clamp(1.8rem, 9vw, 3rem) !important; }
 }
 
-/* Touch devices: no hover effects at all */
+/* Touch-only: no hover transforms */
 @media (hover: none) {
-  .fc:hover, .owner-card:hover, .badge-card:hover, .scard:hover, .abtn:hover {
+  .fc:hover, .owner-card:hover, .badge-card:hover,
+  .scard:hover, .abtn:hover, .btn-p:hover, .btn-o:hover {
     transform: none !important;
     box-shadow: none !important;
-    border-color: inherit !important;
   }
+  .fc::after, .owner-card::before { opacity: 0 !important; }
 }
-
-
-/* ── GPU COMPOSITING HINTS ── */
-nav { will-change: transform; }
-.badge-card, .owner-card, .fc { will-change: transform; contain: layout style paint; }
-.badge-halo, .badge-halo-2, .badge-card::before { will-change: transform; }
 
 </style>
 </head>
@@ -4241,7 +3861,7 @@ nav { will-change: transform; }
           <li class="badge-req-item">لا يُمنح إلا مرة واحدة في السنة</li>
         </ul>
 
-        <div class="badge-difficulty">💎 &nbsp; نادر جداً — للمتميزين فقط</div>
+        <div class="badge-difficulty">💎 &nbsp; نادر جداً — للأفذاذ فقط</div>
         <div class="badge-corner">♛ ONYX ROYAL ♛</div>
       </div>
     </div>
@@ -5138,7 +4758,7 @@ if(window.innerWidth > 768){
   let W,H;
   function rsz(){W=c.width=innerWidth;H=c.height=innerHeight;}
   addEventListener('resize',rsz);rsz();
-  const N=40,P=[];
+  const N=45,P=[];
   for(let i=0;i<N;i++)P.push({
     x:Math.random()*innerWidth,y:Math.random()*innerHeight,
     r:Math.random()*1.5+.3,op:Math.random()*.5+.07,
@@ -5162,11 +4782,10 @@ if(window.innerWidth > 768){
       p.y+=p.dy+Math.cos(t*p.wf+p.ph)*p.wy;
       if(p.x<-4)p.x=W+4;if(p.x>W+4)p.x=-4;
       if(p.y<-4)p.y=H+4;if(p.y>H+4)p.y=-4;
-      x.beginPath();x.arc(p.x,p.y,sz,0,Math.PI*2);
-      x.fillStyle=`rgba(255,255,255,${al})`;x.fill();
+      x.beginPath();x.arc(p.x,p.y,sz,0,Math.PI*2);x.fillStyle=`rgba(255,255,255,${al})`;x.fill();
     });
     requestAnimationFrame(loop);
-  })(0);
+  })();
 })();
 } // end mobile check
 
@@ -6579,7 +6198,7 @@ setInterval(function(){
   if (!eliteOpen && !loginOpen && !mobileOpen) {
     document.body.style.overflow = '';
   }
-}, 2000);
+}, 3000);
 
 </script>
 
@@ -6960,12 +6579,12 @@ setInterval(function(){
 
   /* 8. MOBILE LONG PRESS */
   var _tt;
-  document.addEventListener('touchstart', function(e) { _tt = setTimeout(function() {}, 500); }, { passive: true });
+  document.addEventListener('touchstart', function(e) { _tt = setTimeout(function(){}, 500); }, { passive: true });
   document.addEventListener('touchend', function() { clearTimeout(_tt); });
   document.addEventListener('touchmove', function() { clearTimeout(_tt); });
 
   /* 9. CTRL+WHEEL ZOOM */
-  document.addEventListener('wheel', function(e) { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+  document.addEventListener('wheel', function(e) { if (e.ctrlKey) e.preventDefault(); }, { passive: true });
 
   /* 10. TAB TITLE */
   document.addEventListener('visibilitychange', function() {
@@ -7985,6 +7604,13 @@ document.addEventListener('DOMContentLoaded', function(){ updateAdminNavVisibili
 window.addEventListener('load', function(){ updateAdminNavVisibility(); });
 
 
+
+
+// ── PAUSE WHEN TAB HIDDEN ──
+document.addEventListener('visibilitychange', function(){
+  var s = document.hidden ? 'paused' : 'running';
+  document.querySelectorAll('*').forEach(function(el){ el.style.animationPlayState = s; });
+});
 
 </script>
 
