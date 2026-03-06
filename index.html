@@ -3643,6 +3643,7 @@ canvas#cvs { position:fixed; inset:0; z-index:0; pointer-events:none; }
   }
 </style>
 
+
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -3662,6 +3663,48 @@ firebase.initializeApp(firebaseConfig);
 var db   = firebase.firestore();
 var auth = firebase.auth();
 </script>
+
+<script>
+/* ══════════════════════════════════════════
+   🔔 TOAST NOTIFICATION SYSTEM
+══════════════════════════════════════════ */
+function showToast(type, title, msg, dur) {
+  dur = dur || 5000;
+  var container = document.getElementById('toast-container');
+  if (!container) return;
+  var toast = document.createElement('div');
+  toast.className = 'toast ' + (type || 'info');
+  var icons = { success: '✅', error: '❌', info: '♛', warning: '⚠️' };
+  var safeTitle = String(title || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var safeMsg   = String(msg   || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  toast.innerHTML =
+    '<div class="toast-icon">' + (icons[type] || '♛') + '</div>' +
+    '<div class="toast-body">' +
+      '<div class="toast-title">' + safeTitle + '</div>' +
+      (safeMsg ? '<div class="toast-msg">' + safeMsg + '</div>' : '') +
+    '</div>' +
+    '<button class="toast-x" onclick="removeToast(this.parentElement)">✕</button>' +
+    '<div class="toast-progress" style="--dur:' + (dur/1000) + 's"></div>';
+  toast.onclick = function(e) {
+    if (e.target.classList && e.target.classList.contains('toast-x')) return;
+    removeToast(toast);
+  };
+  container.appendChild(toast);
+  var timer = setTimeout(function() { removeToast(toast); }, dur);
+  toast._timer = timer;
+}
+
+function removeToast(toast) {
+  if (!toast || toast._removing) return;
+  toast._removing = true;
+  clearTimeout(toast._timer);
+  toast.classList.add('removing');
+  setTimeout(function() {
+    if (toast.parentElement) toast.parentElement.removeChild(toast);
+  }, 420);
+}
+</script>
+
 
 </head>
 <body>
@@ -5596,21 +5639,25 @@ function doRegister() {
       .then(function(cred) {
         var uid = cred.user.uid;
         var memberID = String(Math.floor(1000 + Math.random() * 9000));
-        // Save user profile in Firestore
-        return db.collection('users').doc(uid).set({
+        var userData = {
           username:       uname,
           username_lower: uname.toLowerCase(),
           email:          email,
           memberID:       memberID,
           rank:           isAdmin(uname) ? 'admin' : 'member',
           joined:         firebase.firestore.FieldValue.serverTimestamp()
-        }).then(function(){
-          return { username: uname, email: email, uid: uid, memberID: memberID };
-        });
-      })
-      .then(function(user) {
-        if(typeof showToast==='function') showToast('success','تم إنشاء حسابك! 🎉','أهلاً ' + uname + ' — رقم عضويتك: #' + user.memberID);
-        showSuccess(user);
+        };
+        // Save profile in Firestore then show success
+        db.collection('users').doc(uid).set(userData)
+          .then(function() {
+            showToast('success','تم إنشاء حسابك! 🎉','أهلاً ' + uname + ' — رقم عضويتك: #' + memberID);
+            showSuccess({ username: uname, email: email, uid: uid, memberID: memberID });
+          })
+          .catch(function(e) {
+            // Auth succeeded but Firestore failed - still log user in
+            showToast('success','تم إنشاء حسابك! 🎉','أهلاً ' + uname);
+            showSuccess({ username: uname, email: email, uid: uid });
+          });
       })
       .catch(function(err) {
         var msg = err.code === 'auth/email-already-in-use' ? 'هذا البريد مسجّل مسبقاً'
@@ -5618,7 +5665,7 @@ function doRegister() {
                 : err.code === 'auth/weak-password'       ? 'كلمة السر ضعيفة جداً'
                 : 'حدث خطأ، حاول مرة أخرى';
         showErr('regErr', msg);
-        if(typeof showToast==='function') showToast('error','خطأ في التسجيل', msg);
+        showToast('error','خطأ في التسجيل', msg);
       });
   });
 }
@@ -5637,7 +5684,7 @@ function doLogin() {
     .then(function(doc) {
       var data = doc.data() || {};
       var user = { username: data.username || email, email: email, uid: doc.id };
-      if(typeof showToast==='function') showToast('success','مرحباً! 🌙','تم تسجيل دخولك يا ' + sanitizeHtml(user.username));
+      showToast('success','مرحباً! 🌙','تم تسجيل دخولك يا ' + sanitizeHtml(user.username));
       showSuccess(user);
     })
     .catch(function(err) {
@@ -5647,7 +5694,7 @@ function doLogin() {
                 ? 'محاولات كثيرة، انتظر قليلاً'
                 : 'حدث خطأ، حاول مرة أخرى';
       showErr('loginErr', msg);
-      if(typeof showToast==='function') showToast('error','خطأ في تسجيل الدخول', msg);
+      showToast('error','خطأ في تسجيل الدخول', msg);
     });
 }
 
@@ -5658,7 +5705,7 @@ function doLogout() {
     document.getElementById('lm-main').style.display = '';
     updateNavUser(null);
     closeLoginModal();
-    if(typeof showToast==='function') showToast('info','تم تسجيل الخروج','إلى اللقاء! 👋');
+    showToast('info','تم تسجيل الخروج','إلى اللقاء! 👋');
   });
 }
 
