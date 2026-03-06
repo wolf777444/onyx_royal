@@ -3705,6 +3705,256 @@ function removeToast(toast) {
 }
 </script>
 
+<script>
+/* ══════════════════════════════════════════
+   🔐 LOGIN SYSTEM — Firebase Auth
+══════════════════════════════════════════ */
+
+/* Security helpers */
+function sanitizeHtml(str) {
+  if (typeof str !== 'string') return '';
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
+var ADMIN_USERS = ['coaster'];
+function isAdmin(u) { return !!u && ADMIN_USERS.indexOf(u.toLowerCase()) !== -1; }
+
+function showErr(id, msg) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(function(){ el.style.display = 'none'; }, 3500);
+}
+
+/* Modal */
+function openLoginModal() {
+  var m = document.getElementById('loginModal');
+  var bx = document.getElementById('loginModalBox');
+  if (!m || !bx) return;
+  m.style.opacity = '1';
+  m.style.pointerEvents = 'all';
+  bx.style.transform = 'translateY(0) scale(1)';
+  document.body.style.overflow = 'hidden';
+  checkLoggedIn();
+}
+function closeLoginModal() {
+  var m = document.getElementById('loginModal');
+  var bx = document.getElementById('loginModalBox');
+  if (!m || !bx) return;
+  m.style.opacity = '0';
+  m.style.pointerEvents = 'none';
+  bx.style.transform = 'translateY(40px) scale(.95)';
+  document.body.style.overflow = '';
+}
+document.addEventListener('click', function(e) {
+  if (e.target === document.getElementById('loginModal')) closeLoginModal();
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeLoginModal();
+    if (typeof closeProfilePopup === 'function') closeProfilePopup();
+  }
+});
+
+function switchTab(tab) {
+  var isLogin = tab === 'login';
+  var fl = document.getElementById('formLogin');
+  var fr = document.getElementById('formRegister');
+  var tl = document.getElementById('tabLogin');
+  var tr = document.getElementById('tabRegister');
+  if (fl) fl.style.display = isLogin ? '' : 'none';
+  if (fr) fr.style.display = isLogin ? 'none' : '';
+  if (tl) { tl.style.background = isLogin ? 'rgba(124,58,237,.55)' : 'transparent'; tl.style.color = isLogin ? '#fff' : 'rgba(168,85,247,.55)'; }
+  if (tr) { tr.style.background = isLogin ? 'transparent' : 'rgba(124,58,237,.55)'; tr.style.color = isLogin ? 'rgba(168,85,247,.55)' : '#fff'; }
+}
+
+/* Register */
+function doRegister() {
+  var uname = document.getElementById('regUser').value.trim();
+  var email = document.getElementById('regEmail').value.trim();
+  var pass  = document.getElementById('regPass').value;
+  var RESERVED = ['admin','administrator','mod','moderator','owner','onyx','royal'];
+  if (!uname)                              { showErr('regErr','يرجى إدخال اسم المستخدم'); return; }
+  if (RESERVED.indexOf(uname.toLowerCase()) !== -1) { showErr('regErr','هذا الاسم محجوز'); return; }
+  if (!email || !email.includes('@'))      { showErr('regErr','بريد إلكتروني غير صحيح'); return; }
+  if (pass.length < 6)                     { showErr('regErr','كلمة السر 6 أحرف على الأقل'); return; }
+
+  auth.createUserWithEmailAndPassword(email, pass)
+    .then(function(cred) {
+      var uid = cred.user.uid;
+      var memberID = String(Math.floor(1000 + Math.random() * 9000));
+      db.collection('users').doc(uid).set({
+        username:       uname,
+        username_lower: uname.toLowerCase(),
+        email:          email,
+        memberID:       memberID,
+        rank:           isAdmin(uname) ? 'admin' : 'member',
+        joined:         firebase.firestore.FieldValue.serverTimestamp()
+      });
+      showToast('success', 'تم إنشاء حسابك! 🎉', 'أهلاً ' + uname + ' #' + memberID);
+      showSuccess({ username: uname, email: email, uid: uid });
+    })
+    .catch(function(err) {
+      var msg = err.code === 'auth/email-already-in-use' ? 'هذا البريد مسجّل مسبقاً'
+              : err.code === 'auth/invalid-email'        ? 'بريد إلكتروني غير صالح'
+              : err.code === 'auth/weak-password'        ? 'كلمة السر ضعيفة جداً'
+              : 'حدث خطأ: ' + err.message;
+      showErr('regErr', msg);
+      showToast('error', 'خطأ في التسجيل', msg);
+    });
+}
+
+/* Login */
+function doLogin() {
+  var email = document.getElementById('loginEmail').value.trim();
+  var pass  = document.getElementById('loginPass').value;
+  if (!email) { showErr('loginErr', 'يرجى إدخال البريد الإلكتروني'); return; }
+  if (!pass)  { showErr('loginErr', 'يرجى إدخال كلمة السر'); return; }
+
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(function(cred) {
+      return db.collection('users').doc(cred.user.uid).get();
+    })
+    .then(function(doc) {
+      var data = doc.exists ? doc.data() : {};
+      var user = { username: data.username || email, email: email, uid: doc.id };
+      showToast('success', 'مرحباً! 🌙', 'تم تسجيل دخولك يا ' + sanitizeHtml(user.username));
+      showSuccess(user);
+    })
+    .catch(function(err) {
+      var msg = (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential')
+              ? 'البريد الإلكتروني أو كلمة السر غير صحيحة'
+              : err.code === 'auth/too-many-requests'
+              ? 'محاولات كثيرة، انتظر قليلاً'
+              : 'حدث خطأ: ' + err.message;
+      showErr('loginErr', msg);
+      showToast('error', 'خطأ في تسجيل الدخول', msg);
+    });
+}
+
+/* Logout */
+function doLogout() {
+  auth.signOut().then(function() {
+    var lmMain    = document.getElementById('lm-main');
+    var lmSuccess = document.getElementById('lm-success');
+    if (lmMain)    lmMain.style.display = '';
+    if (lmSuccess) lmSuccess.style.display = 'none';
+    updateNavUser(null);
+    closeLoginModal();
+    showToast('info', 'تم تسجيل الخروج', 'إلى اللقاء! 👋');
+  });
+}
+
+/* Show logged-in state */
+function showSuccess(user) {
+  var lmMain    = document.getElementById('lm-main');
+  var lmSuccess = document.getElementById('lm-success');
+  var lmSname   = document.getElementById('lm-sname');
+  var lmSemail  = document.getElementById('lm-semail');
+  if (lmMain)    lmMain.style.display = 'none';
+  if (lmSuccess) lmSuccess.style.display = '';
+  if (lmSname)   lmSname.textContent  = '♛ ' + user.username;
+  if (lmSemail)  lmSemail.textContent = user.email;
+  updateNavUser(user);
+}
+
+/* Check current auth state */
+function checkLoggedIn() {
+  var user = auth.currentUser;
+  if (user) {
+    db.collection('users').doc(user.uid).get().then(function(doc) {
+      var data = doc.exists ? doc.data() : {};
+      showSuccess({ username: data.username || user.email, email: user.email, uid: user.uid });
+    });
+  } else {
+    var lmMain    = document.getElementById('lm-main');
+    var lmSuccess = document.getElementById('lm-success');
+    if (lmMain)    lmMain.style.display = '';
+    if (lmSuccess) lmSuccess.style.display = 'none';
+    switchTab('login');
+  }
+}
+
+/* Update nav bar */
+function updateNavUser(user) {
+  var chip = document.getElementById('navUserChip');
+  var btn  = document.querySelector('.nav-login-btn');
+  if (!chip || !btn) return;
+  if (user) {
+    chip.style.display = 'flex';
+    btn.style.display  = 'none';
+    var nameEl = document.getElementById('navUserName');
+    if (nameEl) nameEl.textContent = user.username;
+    var rankEl = chip.querySelector('.nav-rank-label');
+    if (rankEl) {
+      rankEl.textContent = isAdmin(user.username) ? '👑 Admin' : 'Member';
+      rankEl.classList.toggle('admin-label', isAdmin(user.username));
+      chip.classList.toggle('is-admin', isAdmin(user.username));
+    }
+    if (typeof updateGwAdmin    === 'function') updateGwAdmin();
+    if (typeof renderGiveaways  === 'function') renderGiveaways();
+  } else {
+    chip.style.display = 'none';
+    btn.style.display  = '';
+    if (typeof updateGwAdmin    === 'function') updateGwAdmin();
+    if (typeof renderGiveaways  === 'function') renderGiveaways();
+  }
+}
+
+/* Auth state listener — auto-login on page load */
+auth.onAuthStateChanged(function(user) {
+  if (user) {
+    db.collection('users').doc(user.uid).get().then(function(doc) {
+      var data = doc.exists ? doc.data() : {};
+      updateNavUser({ username: data.username || user.email, email: user.email, uid: user.uid });
+    });
+  } else {
+    updateNavUser(null);
+  }
+});
+
+/* Compat layer for admin panel (getUsers / saveUsers use Firestore) */
+var _usersCache = [];
+function getUsers() { return _usersCache; }
+function saveUsers(arr) {
+  _usersCache = arr;
+  var batch = db.batch();
+  arr.forEach(function(u) {
+    if (!u.uid) return;
+    batch.set(db.collection('users').doc(u.uid), {
+      username:       u.username || '',
+      username_lower: (u.username||'').toLowerCase(),
+      email:          u.email || '',
+      memberID:       u.memberID || '',
+      rank:           u.rank || 'member',
+      ban:            u.ban  || null,
+      mute:           u.mute || null
+    }, { merge: true });
+  });
+  batch.commit().catch(function(e){ console.error('saveUsers:', e); });
+}
+function loadUsersFromFirestore() {
+  db.collection('users').get().then(function(snap) {
+    _usersCache = [];
+    snap.forEach(function(doc) {
+      var d = doc.data();
+      _usersCache.push({
+        uid: doc.id, username: d.username||'', email: d.email||'',
+        memberID: d.memberID||'', rank: d.rank||'member',
+        ban: d.ban||null, mute: d.mute||null,
+        joined: d.joined ? d.joined.toMillis() : Date.now()
+      });
+    });
+  });
+}
+window.addEventListener('load', function() { loadUsersFromFirestore(); });
+
+</script>
+
+
 
 </head>
 <body>
@@ -5556,976 +5806,6 @@ function buildEliteHexes() {
 
 
 
-
-// ══════════════════════════════════════════
-//  LOGIN SYSTEM — Firebase Auth + Firestore
-// ══════════════════════════════════════════
-
-/* ══ SECURITY ══ */
-function sanitizeHtml(str) {
-  if (typeof str !== 'string') return '';
-  var div = document.createElement('div');
-  div.appendChild(document.createTextNode(str));
-  return div.innerHTML;
-}
-
-var ADMIN_USERS = ['coaster'];
-function isAdmin(username) {
-  if (!username) return false;
-  return ADMIN_USERS.indexOf(username.toLowerCase()) !== -1;
-}
-function getUserRank(username) {
-  return isAdmin(username) ? 'admin' : 'member';
-}
-
-function showErr(id, msg) {
-  var el = document.getElementById(id);
-  if (!el) return;
-  el.textContent = msg; el.style.display = 'block';
-  setTimeout(function(){ el.style.display='none'; }, 3500);
-}
-
-/* ══ MODAL CONTROLS ══ */
-function openLoginModal() {
-  var m  = document.getElementById('loginModal');
-  var bx = document.getElementById('loginModalBox');
-  m.style.opacity = '1'; m.style.pointerEvents = 'all';
-  bx.style.transform = 'translateY(0) scale(1)';
-  document.body.style.overflow = 'hidden';
-  checkLoggedIn();
-}
-function closeLoginModal() {
-  var m  = document.getElementById('loginModal');
-  var bx = document.getElementById('loginModalBox');
-  m.style.opacity = '0'; m.style.pointerEvents = 'none';
-  bx.style.transform = 'translateY(40px) scale(.95)';
-  document.body.style.overflow = '';
-}
-document.addEventListener('click', function(e){
-  if (e.target === document.getElementById('loginModal')) closeLoginModal();
-});
-document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape') { closeLoginModal(); if(typeof closeProfilePopup==='function') closeProfilePopup(); }
-});
-
-function switchTab(tab) {
-  var isLogin = tab === 'login';
-  document.getElementById('formLogin').style.display    = isLogin ? '' : 'none';
-  document.getElementById('formRegister').style.display = isLogin ? 'none' : '';
-  document.getElementById('tabLogin').style.background    = isLogin ? 'rgba(124,58,237,.55)' : 'transparent';
-  document.getElementById('tabLogin').style.color         = isLogin ? '#fff' : 'rgba(168,85,247,.55)';
-  document.getElementById('tabRegister').style.background = isLogin ? 'transparent' : 'rgba(124,58,237,.55)';
-  document.getElementById('tabRegister').style.color      = isLogin ? 'rgba(168,85,247,.55)' : '#fff';
-}
-
-/* ══ FIREBASE: REGISTER ══ */
-function doRegister() {
-  var uname = document.getElementById('regUser').value.trim();
-  var email = document.getElementById('regEmail').value.trim();
-  var pass  = document.getElementById('regPass').value;
-
-  var RESERVED_NAMES = ['admin','administrator','mod','moderator','owner','onyx','royal','onyx royal'];
-  if (!uname) { showErr('regErr','يرجى إدخال اسم المستخدم'); return; }
-  if (RESERVED_NAMES.indexOf(uname.toLowerCase()) !== -1) { showErr('regErr','هذا الاسم محجوز'); return; }
-  if (!email || !email.includes('@')) { showErr('regErr','يرجى إدخال بريد إلكتروني صحيح'); return; }
-  if (pass.length < 6) { showErr('regErr','كلمة السر 6 أحرف على الأقل'); return; }
-
-  // Check username not taken
-  db.collection('users').where('username_lower','==',uname.toLowerCase()).get().then(function(snap){
-    if (!snap.empty) { showErr('regErr','هذا الاسم مأخوذ، جرّب اسماً آخر'); return; }
-
-    // Firebase Auth: create user
-    auth.createUserWithEmailAndPassword(email, pass)
-      .then(function(cred) {
-        var uid = cred.user.uid;
-        var memberID = String(Math.floor(1000 + Math.random() * 9000));
-        var userData = {
-          username:       uname,
-          username_lower: uname.toLowerCase(),
-          email:          email,
-          memberID:       memberID,
-          rank:           isAdmin(uname) ? 'admin' : 'member',
-          joined:         firebase.firestore.FieldValue.serverTimestamp()
-        };
-        // Save profile in Firestore then show success
-        db.collection('users').doc(uid).set(userData)
-          .then(function() {
-            showToast('success','تم إنشاء حسابك! 🎉','أهلاً ' + uname + ' — رقم عضويتك: #' + memberID);
-            showSuccess({ username: uname, email: email, uid: uid, memberID: memberID });
-          })
-          .catch(function(e) {
-            // Auth succeeded but Firestore failed - still log user in
-            showToast('success','تم إنشاء حسابك! 🎉','أهلاً ' + uname);
-            showSuccess({ username: uname, email: email, uid: uid });
-          });
-      })
-      .catch(function(err) {
-        var msg = err.code === 'auth/email-already-in-use' ? 'هذا البريد مسجّل مسبقاً'
-                : err.code === 'auth/invalid-email'       ? 'بريد إلكتروني غير صالح'
-                : err.code === 'auth/weak-password'       ? 'كلمة السر ضعيفة جداً'
-                : 'حدث خطأ، حاول مرة أخرى';
-        showErr('regErr', msg);
-        showToast('error','خطأ في التسجيل', msg);
-      });
-  });
-}
-
-/* ══ FIREBASE: LOGIN ══ */
-function doLogin() {
-  var email = document.getElementById('loginEmail').value.trim();
-  var pass  = document.getElementById('loginPass').value;
-  if (!email) { showErr('loginErr','يرجى إدخال البريد الإلكتروني'); return; }
-  if (!pass)  { showErr('loginErr','يرجى إدخال كلمة السر'); return; }
-
-  auth.signInWithEmailAndPassword(email, pass)
-    .then(function(cred) {
-      return db.collection('users').doc(cred.user.uid).get();
-    })
-    .then(function(doc) {
-      var data = doc.data() || {};
-      var user = { username: data.username || email, email: email, uid: doc.id };
-      showToast('success','مرحباً! 🌙','تم تسجيل دخولك يا ' + sanitizeHtml(user.username));
-      showSuccess(user);
-    })
-    .catch(function(err) {
-      var msg = (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential')
-                ? 'البريد الإلكتروني أو كلمة السر غير صحيحة'
-                : err.code === 'auth/too-many-requests'
-                ? 'محاولات كثيرة، انتظر قليلاً'
-                : 'حدث خطأ، حاول مرة أخرى';
-      showErr('loginErr', msg);
-      showToast('error','خطأ في تسجيل الدخول', msg);
-    });
-}
-
-/* ══ FIREBASE: LOGOUT ══ */
-function doLogout() {
-  auth.signOut().then(function(){
-    document.getElementById('lm-success').style.display = 'none';
-    document.getElementById('lm-main').style.display = '';
-    updateNavUser(null);
-    closeLoginModal();
-    showToast('info','تم تسجيل الخروج','إلى اللقاء! 👋');
-  });
-}
-
-function showSuccess(user) {
-  document.getElementById('lm-main').style.display    = 'none';
-  document.getElementById('lm-success').style.display = '';
-  document.getElementById('lm-sname').textContent  = '♛ ' + user.username;
-  document.getElementById('lm-semail').textContent = user.email;
-  updateNavUser(user);
-}
-
-function checkLoggedIn() {
-  var user = auth.currentUser;
-  if (user) {
-    db.collection('users').doc(user.uid).get().then(function(doc){
-      var data = doc.data() || {};
-      showSuccess({ username: data.username || user.email, email: user.email, uid: user.uid });
-    });
-  } else {
-    document.getElementById('lm-main').style.display    = '';
-    document.getElementById('lm-success').style.display = 'none';
-    switchTab('login');
-  }
-}
-
-function updateNavUser(user) {
-  var chip = document.getElementById('navUserChip');
-  var btn  = document.querySelector('.nav-login-btn');
-  if (!chip || !btn) return;
-  if (user) {
-    chip.style.display = 'flex'; btn.style.display = 'none';
-    document.getElementById('navUserName').textContent = user.username;
-    var navRankEl = chip.querySelector('.nav-rank-label');
-    if (navRankEl) {
-      if (isAdmin(user.username)) {
-        navRankEl.textContent = '👑 Admin';
-        navRankEl.classList.add('admin-label');
-        chip.classList.add('is-admin');
-      } else {
-        navRankEl.textContent = 'Member';
-        navRankEl.classList.remove('admin-label');
-        chip.classList.remove('is-admin');
-      }
-    }
-    if(typeof updateGwAdmin==='function') updateGwAdmin();
-    if(typeof renderGiveaways==='function') renderGiveaways();
-    var lockMsg = document.getElementById('applyLockMsg');
-    var formContent = document.getElementById('fi');
-    if (lockMsg && lockMsg.style.display === 'block') {
-      lockMsg.style.display = 'none';
-      if (formContent) formContent.style.display = '';
-    }
-  } else {
-    chip.style.display = 'none'; btn.style.display = '';
-    if(typeof updateGwAdmin==='function') updateGwAdmin();
-    if(typeof renderGiveaways==='function') renderGiveaways();
-  }
-}
-
-/* ══ AUTH STATE LISTENER — runs on every page load ══ */
-auth.onAuthStateChanged(function(user) {
-  if (user) {
-    db.collection('users').doc(user.uid).get().then(function(doc){
-      var data = doc.data() || {};
-      updateNavUser({ username: data.username || user.email, email: user.email, uid: user.uid });
-    });
-  } else {
-    updateNavUser(null);
-  }
-});
-
-
-
-// ══════════════════════════════════════════
-//  FIREBASE COMPAT LAYER — getUsers / saveUsers
-//  Admin panel functions use these to read/write Firestore
-// ══════════════════════════════════════════
-
-/* In-memory cache of users — refreshed from Firestore */
-var _usersCache = [];
-var _usersCacheLoaded = false;
-
-function getUsers() {
-  return _usersCache;
-}
-
-function saveUsers(arr) {
-  _usersCache = arr;
-  // Batch write changes back to Firestore
-  var batch = db.batch();
-  arr.forEach(function(u) {
-    if (!u.uid) return; // skip users without uid
-    var ref = db.collection('users').doc(u.uid);
-    batch.set(ref, {
-      username:       u.username || '',
-      username_lower: (u.username || '').toLowerCase(),
-      email:          u.email || '',
-      memberID:       u.memberID || '',
-      rank:           u.rank || 'member',
-      ban:            u.ban || null,
-      mute:           u.mute || null,
-      joined:         u.joined || null
-    }, { merge: true });
-  });
-  batch.commit().catch(function(e){ console.error('saveUsers batch error:', e); });
-}
-
-/* Load all users from Firestore into cache */
-function loadUsersFromFirestore(callback) {
-  db.collection('users').get().then(function(snap) {
-    _usersCache = [];
-    snap.forEach(function(doc) {
-      var d = doc.data();
-      _usersCache.push({
-        uid:      doc.id,
-        username: d.username || '',
-        email:    d.email || '',
-        memberID: d.memberID || '',
-        rank:     d.rank || 'member',
-        ban:      d.ban || null,
-        mute:     d.mute || null,
-        joined:   d.joined ? d.joined.toMillis() : Date.now()
-      });
-    });
-    _usersCacheLoaded = true;
-    if (typeof callback === 'function') callback(_usersCache);
-  }).catch(function(e){
-    console.error('loadUsers error:', e);
-    if (typeof callback === 'function') callback([]);
-  });
-}
-
-/* Auto-load users when admin opens members panel */
-var _origOpenMpage = null;
-window.addEventListener('load', function(){
-  // Load users cache on startup for admin use
-  loadUsersFromFirestore();
-});
-
-
-// ── MOBILE MENU ──
-function toggleMobileMenu() {
-  var m = document.getElementById('mobileMenu');
-  m.classList.toggle('open');
-  document.body.style.overflow = m.classList.contains('open') ? 'hidden' : '';
-}
-
-
-
-
-/* ══════════════════════════════════════════
-   🎁 GIVEAWAY SYSTEM
-══════════════════════════════════════════ */
-var GW_WEBHOOK = atob('aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQ3OTM4Mjc4NDU0MzAzNTQ2NC9kS2pXMGdKLU5pMHJLdVJYTjZkVmFyVVIzcnRBdERxUEUxQUFwUHBXQ3VkTHlYaF9GX05oeVBFckl3OHFWdXdGTnR0LQ==');
-var gwType = 'giveaway';
-var gwTimers = {};
-
-function setGwType(t) {
-  gwType = t;
-  document.getElementById('typeGiv').classList.toggle('active', t === 'giveaway');
-  document.getElementById('typeWhy').classList.toggle('active', t === 'why');
-}
-
-function toggleGwPanel() {
-  var p = document.getElementById('gw-admin-panel');
-  var open = p.classList.toggle('open');
-  document.getElementById('gw-admin-label').textContent = open ? 'إغلاق اللوحة' : 'لوحة الإدارة';
-  document.getElementById('gw-admin-icon').textContent  = open ? '✕' : '⚙️';
-}
-
-/* ══ Storage helpers — localStorage ══ */
-async function loadGiveaways() {
-  try {
-    var arr = JSON.parse(localStorage.getItem('ox_giveaways') || '[]');
-    if (!Array.isArray(arr)) return [];
-    // Sanitize each giveaway entry to prevent stored XSS
-    return arr.map(function(gw) {
-      if (typeof gw !== 'object' || !gw) return null;
-      gw.prize   = typeof gw.prize   === 'string' ? gw.prize.substring(0,200)   : '';
-      gw.desc    = typeof gw.desc    === 'string' ? gw.desc.substring(0,500)    : '';
-      gw.emoji   = typeof gw.emoji   === 'string' ? gw.emoji.substring(0,10)    : '🎁';
-      gw.editedBy= typeof gw.editedBy=== 'string' ? gw.editedBy.substring(0,50) : '';
-      gw.winners = parseInt(gw.winners) || 1;
-      return gw;
-    }).filter(Boolean);
-  } catch(e) { return []; }
-}
-async function saveGiveaways(arr) {
-  try { localStorage.setItem('ox_giveaways', JSON.stringify(arr)); } catch(e){}
-}
-async function getGwParticipants(id) {
-  try { return JSON.parse(localStorage.getItem('ox_gwp_' + id) || '[]'); } catch(e) { return []; }
-}
-async function saveGwParticipants(id, arr) {
-  try { localStorage.setItem('ox_gwp_' + id, JSON.stringify(arr)); } catch(e){}
-}
-
-
-/* ══ Giveaway Image Helpers ══ */
-var gwImgBase64 = null;
-var gwImgMode   = 'upload'; // 'upload' | 'url'
-
-function switchImgTab(mode) {
-  gwImgMode = mode;
-  document.getElementById('imgTabUpload').classList.toggle('active', mode==='upload');
-  document.getElementById('imgTabUrl').classList.toggle('active',    mode==='url');
-  document.getElementById('imgPanelUpload').style.display = mode==='upload' ? '' : 'none';
-  document.getElementById('imgPanelUrl').style.display    = mode==='url'    ? '' : 'none';
-}
-
-function handleGwImgFile(input) {
-  var file = input.files[0];
-  if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { showToast('warning','الصورة كبيرة جداً','الحد الأقصى 5MB'); return; }
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    gwImgBase64 = e.target.result;
-    var prev = document.getElementById('gwImgPreviewUpload');
-    prev.src = gwImgBase64; prev.style.display = 'block';
-    document.getElementById('gwImgClearUpload').style.display = 'inline-block';
-  };
-  reader.readAsDataURL(file);
-}
-
-function previewGwImgUrl(url) {
-  var prev = document.getElementById('gwImgPreviewUrl');
-  var clr  = document.getElementById('gwImgClearUrl');
-  if (url && url.startsWith('http')) {
-    prev.src = url; prev.style.display = 'block';
-    clr.style.display = 'inline-block';
-    prev.onerror = function(){ prev.style.display='none'; showToast('warning','رابط غير صحيح','تعذّر تحميل الصورة من هذا الرابط'); };
-  } else {
-    prev.style.display = 'none'; clr.style.display = 'none';
-  }
-}
-
-function clearGwImg(mode) {
-  if (mode === 'upload') {
-    gwImgBase64 = null;
-    document.getElementById('gwImgFile').value = '';
-    document.getElementById('gwImgPreviewUpload').style.display = 'none';
-    document.getElementById('gwImgClearUpload').style.display   = 'none';
-  } else {
-    document.getElementById('gwImgUrl').value = '';
-    document.getElementById('gwImgPreviewUrl').style.display  = 'none';
-    document.getElementById('gwImgClearUrl').style.display    = 'none';
-  }
-}
-
-function getGwImageForSave() {
-  if (gwImgMode === 'upload' && gwImgBase64) return gwImgBase64;
-  if (gwImgMode === 'url') {
-    var url = (document.getElementById('gwImgUrl').value || '').trim();
-    return url || null;
-  }
-  return null;
-}
-
-function resetGwImgFields() {
-  clearGwImg('upload'); clearGwImg('url');
-  gwImgBase64 = null; gwImgMode = 'upload';
-  switchImgTab('upload');
-}
-
-/* Drag-over highlight */
-document.addEventListener('DOMContentLoaded', function(){
-  var drop = document.getElementById('gwImgDrop');
-  if (!drop) return;
-  drop.addEventListener('dragover', function(e){ e.preventDefault(); drop.classList.add('drag-over'); });
-  drop.addEventListener('dragleave', function(){ drop.classList.remove('drag-over'); });
-  drop.addEventListener('drop', function(e){
-    e.preventDefault(); drop.classList.remove('drag-over');
-    var file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      var inp = document.getElementById('gwImgFile');
-      var dt = new DataTransfer(); dt.items.add(file);
-      inp.files = dt.files; handleGwImgFile(inp);
-    }
-  });
-});
-
-function gwDurationMs(h, m, s) {
-  return ((parseInt(h)||0) * 3600 + (parseInt(m)||0) * 60 + (parseInt(s)||0)) * 1000;
-}
-
-async function sendGwToDiscord(gw, eventType) {
-  var typeLabel = gw.type === 'giveaway' ? 'GIVEAWAY 🎁' : 'WHY 🟢';
-  var color     = gw.type === 'giveaway' ? 0x7c3aed : 0x22c55e;
-  var endDate   = new Date(gw.endTime);
-  var endStr    = endDate.toLocaleDateString('ar-SA', { weekday:'long', day:'numeric', month:'long' })
-                + ' — ' + endDate.toLocaleTimeString('ar-SA', { hour:'2-digit', minute:'2-digit' });
-
-  var titleMap  = { create:'🎉 فعالية جديدة', edit:'✏️ تم تعديل فعالية', pause:'⏸️ تم إيقاف فعالية مؤقتاً', resume:'▶️ تم استئناف فعالية', delete:'🗑️ تم حذف فعالية' };
-  var embedTitle = (titleMap[eventType] || '♛') + ' — ' + gw.prize;
-
-  var fields = [
-    { name:'🏆 الجائزة', value: gw.prize, inline:true },
-    { name:'👑 الفائزون', value: gw.winners + ' فائز', inline:true }
-  ];
-  if (eventType !== 'delete' && eventType !== 'pause') {
-    fields.push({ name:'⏰ تنتهي في', value: endStr, inline:false });
-  }
-  if (gw.desc) fields.push({ name:'📋 الشروط', value: gw.desc, inline:false });
-  if (eventType === 'edit' && gw.editedBy) {
-    fields.push({ name:'✏️ عُدِّل بواسطة', value: gw.editedBy, inline:true });
-  }
-
-  try {
-    await fetch(GW_WEBHOOK, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        username:'Onyx Royal | الجوائز',
-        avatar_url:'https://i.imgur.com/AfFp7pu.png',
-        embeds:[{
-          title: gw.emoji + '  ' + embedTitle,
-          description: (gw.desc || 'لا يوجد وصف') + (eventType==='create' ? '\n\n🔗 **شارك من موقع Onyx Royal — قسم الجوائز**' : ''),
-          color: color,
-          fields: fields,
-          footer:{ text:'Onyx Royal • قسم الجوائز' },
-          timestamp: new Date().toISOString()
-        }]
-      })
-    });
-  } catch(e) { /* silent */ }
-}
-
-async function createGiveaway() {
-  var s       = getSession();
-  var prize   = (document.getElementById('gw-prize').value || '').trim();
-  var emoji   = (document.getElementById('gw-emoji').value || '🎁').trim() || '🎁';
-  var h       = document.getElementById('gw-hours').value;
-  var m       = document.getElementById('gw-mins').value;
-  var sc      = document.getElementById('gw-secs').value;
-  var winners = parseInt(document.getElementById('gw-winners').value) || 1;
-  var desc    = (document.getElementById('gw-desc').value || '').trim();
-
-  if (!prize)  { showToast('warning','حقل مطلوب','يرجى إدخال اسم الجائزة'); return; }
-  var durMs = gwDurationMs(h, m, sc);
-  if (durMs < 5000) { showToast('warning','مدة قصيرة جداً','يجب أن تكون المدة 5 ثواني على الأقل'); return; }
-
-  var btn = document.getElementById('gw-create-btn');
-  btn.disabled = true; btn.textContent = '⏳ جاري الإنشاء...';
-
-  var endTime = Date.now() + durMs;
-  var id      = 'gw_' + Date.now();
-  var gwImage  = getGwImageForSave();
-  var gw      = { id:id, type:gwType, prize:prize, emoji:emoji,
-                  winners:winners, desc:desc, endTime:endTime,
-                  image: gwImage,
-                  createdAt:Date.now(), paused:false, createdBy: s ? s.username : 'Admin' };
-
-  /* ── 1. حفظ الجائزة محلياً أولاً ── */
-  var gws = await loadGiveaways();
-  gws.push(gw);
-  await saveGiveaways(gws);
-  renderGiveaways();
-  showToast('success','تم إنشاء الفعالية! 🎁','ظهرت الفعالية على الموقع بنجاح');
-  ['gw-prize','gw-emoji','gw-hours','gw-mins','gw-secs','gw-winners','gw-desc']
-    .forEach(function(f){ var el=document.getElementById(f); if(el) el.value=''; });
-  toggleGwPanel();
-
-  /* ── 2. إرسال إلى Discord (بشكل منفصل، لا يؤثر على الحفظ) ── */
-  try {
-    var res = await fetch(GW_WEBHOOK, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        username:'Onyx Royal | الجوائز', avatar_url:'https://i.imgur.com/AfFp7pu.png',
-        embeds:[{
-          title: emoji + '  ' + (gwType==='giveaway'?'GIVEAWAY 🎁':'WHY 🟢') + ' — ' + prize,
-          description:(desc||'لا يوجد وصف')+'\n\n🔗 **شارك من موقع Onyx Royal — قسم الجوائز**',
-          color: gwType==='giveaway'?0x7c3aed:0x22c55e,
-          fields:[
-            {name:'🏆 الجائزة',value:prize,inline:true},
-            {name:'👑 الفائزون',value:winners+' فائز',inline:true},
-            {name:'⏰ تنتهي في',value:new Date(endTime).toLocaleString('ar-SA'),inline:false},
-            {name:'📋 الشروط',value:desc||'لا توجد شروط خاصة',inline:false}
-          ],
-          footer:{text:'Onyx Royal • قسم الجوائز — للمشاركة سجّل دخولك على الموقع'},
-          timestamp:new Date().toISOString()
-        }]
-      })
-    });
-    if (res.ok || res.status === 204) {
-      showToast('info','Discord ✅','تم إرسال الإشعار إلى Discord');
-    }
-  } catch(e) {
-    /* Discord failed silently — giveaway already saved locally */
-  }
-  btn.disabled=false; btn.textContent='♛  إنشاء وإرسال إلى Discord';
-}
-
-async function deleteGiveaway(id) {
-  var gws = await loadGiveaways();
-  var gw  = gws.find(function(g){ return g.id===id; });
-  if (!gw) return;
-  if (!confirm('هل أنت متأكد من حذف هذه الفعالية؟')) return;
-  sendGwToDiscord(gw, 'delete');
-  await saveGiveaways(gws.filter(function(g){ return g.id!==id; }));
-  showToast('info','تم الحذف','تم حذف الفعالية بنجاح 🗑️');
-  renderGiveaways();
-}
-
-async function pauseGiveaway(id) {
-  var gws = await loadGiveaways();
-  var gw  = gws.find(function(g){ return g.id===id; });
-  if (!gw) return;
-  gw.paused = !gw.paused;
-  gwPausedState[id] = gw.paused; /* update in-memory cache */
-  if (gw.paused) {
-    gw.pausedAt = Date.now();
-    showToast('warning','تم الإيقاف المؤقت','تم إيقاف الفعالية مؤقتاً ⏸️');
-    sendGwToDiscord(gw, 'pause');
-  } else {
-    if (gw.pausedAt) { gw.endTime += (Date.now() - gw.pausedAt); gw.pausedAt = null; }
-    showToast('success','تم الاستئناف','تم استئناف الفعالية ▶️');
-    sendGwToDiscord(gw, 'resume');
-  }
-  await saveGiveaways(gws);
-  renderGiveaways();
-}
-
-async function openGwEdit(id) {
-  var gws = await loadGiveaways();
-  var gw  = gws.find(function(g){ return g.id===id; });
-  if (!gw) return;
-  document.getElementById('gw-edit-id').value      = id;
-  document.getElementById('gw-edit-prize').value   = gw.prize;
-  document.getElementById('gw-edit-emoji').value   = gw.emoji || '🎁';
-  document.getElementById('gw-edit-winners').value = gw.winners;
-  document.getElementById('gw-edit-desc').value    = gw.desc || '';
-  document.getElementById('gw-edit-addhours').value = '';
-  document.getElementById('gw-edit-addmins').value  = '';
-  document.getElementById('gw-edit-addsecs').value  = '';
-  document.getElementById('gw-edit-modal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closeGwEdit() {
-  document.getElementById('gw-edit-modal').classList.remove('open');
-  document.body.style.overflow = '';
-}
-async function saveGwEdit() {
-  var s       = getSession();
-  var id      = document.getElementById('gw-edit-id').value;
-  var gws     = await loadGiveaways();
-  var gw      = gws.find(function(g){ return g.id===id; });
-  if (!gw) return;
-
-  var newPrize   = (document.getElementById('gw-edit-prize').value||'').trim() || gw.prize;
-  var newEmoji   = (document.getElementById('gw-edit-emoji').value||'').trim() || gw.emoji;
-  var newWinners = parseInt(document.getElementById('gw-edit-winners').value) || gw.winners;
-  var newDesc    = (document.getElementById('gw-edit-desc').value||'').trim();
-  var addMs      = gwDurationMs(
-    document.getElementById('gw-edit-addhours').value,
-    document.getElementById('gw-edit-addmins').value,
-    document.getElementById('gw-edit-addsecs').value
-  );
-
-  gw.prize    = newPrize;
-  gw.emoji    = newEmoji;
-  gw.winners  = newWinners;
-  gw.desc     = newDesc;
-  gw.editedBy = s ? s.username : 'Admin';
-  gw.editedAt = Date.now();
-  if (addMs > 0) gw.endTime += addMs;
-
-  await saveGiveaways(gws);
-  await sendGwToDiscord(gw, 'edit');
-  showToast('success','تم التعديل ✅','تم تعديل الفعالية بواسطة ' + (s ? s.username : 'Admin'));
-  closeGwEdit();
-  renderGiveaways();
-}
-
-async function joinGiveaway(id) {
-  var s = getSession();
-  if (!s) { showToast('warning','يجب تسجيل الدخول','رتبة Member مطلوبة للمشاركة 🔒'); openLoginModal(); return; }
-
-  var parts = await getGwParticipants(id);
-  if (parts.indexOf(s.username) !== -1) {
-    showToast('info','مشارك بالفعل','أنت مشارك في هذه الجائزة بالفعل ✅'); return;
-  }
-
-  parts.push(s.username);
-  await saveGwParticipants(id, parts);
-
-  /* Notify Discord */
-  fetch(GW_WEBHOOK, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      username: 'Onyx Royal | الجوائز',
-      avatar_url: 'https://i.imgur.com/AfFp7pu.png',
-      embeds: [{
-        title: '🎟️ مشاركة جديدة',
-        description: '**' + s.username + '** انضم إلى الجائزة!',
-        color: 0x7c3aed,
-        fields: [{ name: '👥 إجمالي المشاركين', value: parts.length + ' عضو', inline: true }],
-        footer: { text: 'Onyx Royal • قسم الجوائز' },
-        timestamp: new Date().toISOString()
-      }]
-    })
-  }).catch(function(){});
-
-  showToast('success','تم التسجيل! 🎉','أنت الآن في القرعة، حظاً موفقاً ' + s.username + '! 🍀');
-
-  /* Confetti burst */
-  var btn = document.getElementById('join_' + id);
-  if (btn) {
-    btn.textContent = '✅ أنت مشارك!';
-    btn.classList.add('joined'); btn.disabled = true;
-    for (var i = 0; i < 6; i++) {
-      (function(delay){
-        setTimeout(function(){
-          var c = document.createElement('span');
-          c.className = 'gw-confetti';
-          c.textContent = ['🎉','✨','🌟','🎊','⭐','🎁'][delay];
-          c.style.setProperty('--cx', (Math.random()*120-60) + 'px');
-          c.style.setProperty('--cy', (-50 - Math.random()*40) + 'px');
-          btn.parentElement.style.position = 'relative';
-          btn.parentElement.appendChild(c);
-          setTimeout(function(){ c.remove(); }, 700);
-        }, delay * 90);
-      })(i);
-    }
-  }
-
-  /* Update count */
-  var countEl = document.getElementById('part_' + id);
-  if (countEl) countEl.textContent = parts.length;
-}
-
-function formatTimer(ms) {
-  if (ms <= 0) return null;
-  var s = Math.floor(ms / 1000);
-  var d = Math.floor(s / 86400); s -= d * 86400;
-  var h = Math.floor(s / 3600);  s -= h * 3600;
-  var m = Math.floor(s / 60);    s -= m * 60;
-  return { d: d, h: h, m: m, s: s };
-}
-
-function pad(n){ return n < 10 ? '0' + n : '' + n; }
-
-/* ══ Pick random winners from participants ══ */
-async function pickAndAnnounceWinners(gw) {
-  /* Prevent picking twice */
-  var gws = await loadGiveaways();
-  var gwData = gws.find(function(g){ return g.id === gw.id; });
-  if (!gwData || gwData.winners_picked) return;
-  gwData.winners_picked = true;
-  // winners will be saved after picking
-  await saveGiveaways(gws);
-
-  var parts = await getGwParticipants(gw.id);
-  var count = Math.min(gw.winners, parts.length);
-  var winners = [];
-
-  if (parts.length === 0) {
-    winners = ['لا يوجد مشاركون'];
-  } else {
-    /* Fisher-Yates shuffle then pick first N */
-    var pool = parts.slice();
-    for (var i = pool.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
-    }
-    winners = pool.slice(0, count);
-  }
-
-  /* Save winners list for persistence */
-  var gws2 = await loadGiveaways();
-  var gwRec = gws2.find(function(g){ return g.id === gw.id; });
-  if (gwRec) { gwRec.winnersList = winners; await saveGiveaways(gws2); }
-  /* Show winner overlay on the card */
-  showWinnerOverlay(gw.id, winners, gw.prize, gw.emoji);
-
-  /* Announce on Discord */
-  var winnersStr = winners.join('\\n');
-  var color = gw.type === 'why' ? 0x22c55e : 0xf5c842;
-  fetch(GW_WEBHOOK, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      username: 'Onyx Royal | الجوائز',
-      avatar_url: 'https://i.imgur.com/AfFp7pu.png',
-      embeds: [{
-        title: '🏆 تهانينا للفائزين! — ' + (gw.emoji||'🎁') + ' ' + gw.prize,
-        description: '**انتهت الفعالية وتم اختيار الفائزين بشكل عشوائي!**',
-        color: color,
-        fields: [
-          { name: '🏆 الفائز' + (winners.length > 1 ? 'ون' : ''),
-            value: winners.map(function(w){ return '♛ **' + w + '**'; }).join('\n'),
-            inline: false },
-          { name: '🎁 الجائزة',  value: gw.prize,                   inline: true },
-          { name: '👥 إجمالي المشاركين', value: parts.length + ' عضو', inline: true },
-        ],
-        footer: { text: 'Onyx Royal • قسم الجوائز — تهانينا للفائزين!' },
-        timestamp: new Date().toISOString()
-      }]
-    })
-  }).catch(function(){});
-
-  /* Toast notification */
-  showToast('success', '🏆 تم اختيار الفائزين!', winners.join(' & ') + ' — تهانينا! 🎉', 8000);
-}
-
-function showWinnerOverlay(id, winners, prize, emoji) {
-  var card = document.getElementById('gwcard_' + id);
-  if (!card) return;
-
-  var namesHtml = winners.map(function(w){
-    return '<div class="gw-winner-name-badge">♛ ' + w + '</div>';
-  }).join('');
-
-  var overlay = document.createElement('div');
-  overlay.className = 'gw-winner-overlay';
-  overlay.id = 'winner_overlay_' + id;
-  overlay.innerHTML =
-    '<div class="gw-winner-trophy">' + sanitizeHtml(emoji||'🏆') + '</div>' +
-    '<div class="gw-winner-title">✦ الفائز' + (winners.length>1?'ون':'') + ' ✦</div>' +
-    '<div class="gw-winner-names">' + sanitizeHtml(namesHtml) + '</div>' +
-    '<div class="gw-winner-prize-label">🎁 ' + sanitizeHtml(prize) + '</div>' +
-    '<div class="gw-winner-congrats">★ &nbsp; مبروك &nbsp; ★</div>';
-
-  card.style.position = 'relative';
-  card.appendChild(overlay);
-
-  /* Shoot star particles */
-  var emojis = ['⭐','🌟','✨','🎊','🎉','💫','🥇'];
-  for (var i = 0; i < 12; i++) {
-    (function(idx){
-      setTimeout(function(){
-        var p = document.createElement('span');
-        p.className = 'gw-star-particle';
-        p.textContent = emojis[idx % emojis.length];
-        p.style.setProperty('--tx', (Math.random()*200-100)+'px');
-        p.style.setProperty('--ty', (Math.random()*(-80)-20)+'px');
-        p.style.setProperty('--sz', (.6+Math.random()*.8)+'rem');
-        p.style.setProperty('--dur', (1.2+Math.random()*.8)+'s');
-        overlay.appendChild(p);
-        setTimeout(function(){ p.remove(); }, 2200);
-      }, idx * 120);
-    })(i);
-  }
-}
-
-/* gwPausedState: in-memory cache to avoid localStorage read every tick */
-var gwPausedState = {};
-
-function startCardTimer(id, endTime) {
-  if (gwTimers[id]) clearInterval(gwTimers[id]);
-  gwTimers[id] = setInterval(function(){
-    /* Check paused from in-memory cache — no async, no flicker */
-    if (gwPausedState[id]) return;
-
-    var t  = formatTimer(endTime - Date.now());
-    var el = document.getElementById('timer_' + id);
-    if (!el) { clearInterval(gwTimers[id]); return; }
-
-    if (!t) {
-      el.innerHTML = '<div class="gw-ended-text">⏰ انتهت الجائزة</div>';
-      clearInterval(gwTimers[id]);
-      var joinBtn = document.getElementById('join_' + id);
-      if (joinBtn) { joinBtn.textContent = '⏰ انتهت الجائزة'; joinBtn.classList.add('ended'); joinBtn.disabled = true; }
-      /* Load once to pick winners */
-      loadGiveaways().then(function(gws){
-        var gw = gws.find(function(g){ return g.id === id; });
-        if (gw && !gw.winners_picked) pickAndAnnounceWinners(gw);
-      });
-      return;
-    }
-
-    if (t.d > 0) {
-      el.innerHTML =
-        '<div class="gw-digit-box"><div class="gw-digit">' + pad(t.d) + '</div><div class="gw-digit-label">يوم</div></div>' +
-        '<div class="gw-digit-sep">:</div>' +
-        '<div class="gw-digit-box"><div class="gw-digit">' + pad(t.h) + '</div><div class="gw-digit-label">ساعة</div></div>' +
-        '<div class="gw-digit-sep">:</div>' +
-        '<div class="gw-digit-box"><div class="gw-digit">' + pad(t.m) + '</div><div class="gw-digit-label">دقيقة</div></div>';
-    } else {
-      el.innerHTML =
-        '<div class="gw-digit-box"><div class="gw-digit">' + pad(t.h) + '</div><div class="gw-digit-label">ساعة</div></div>' +
-        '<div class="gw-digit-sep">:</div>' +
-        '<div class="gw-digit-box"><div class="gw-digit">' + pad(t.m) + '</div><div class="gw-digit-label">دقيقة</div></div>' +
-        '<div class="gw-digit-sep">:</div>' +
-        '<div class="gw-digit-box"><div class="gw-digit">' + pad(t.s) + '</div><div class="gw-digit-label">ثانية</div></div>';
-    }
-  }, 1000);
-}
-
-async function renderGiveaways() {
-  var gws  = await loadGiveaways();
-  var wrap = document.getElementById('gw-cards-wrap');
-  var s    = getSession();
-
-  /* Clear old timers and reset pause cache */
-  Object.keys(gwTimers).forEach(function(k){ clearInterval(gwTimers[k]); });
-  gwTimers = {}; gwPausedState = {};
-
-  if (!gws.length) {
-    wrap.innerHTML =
-      '<div class="gw-empty">' +
-        '<div class="gw-empty-icon">🎁</div>' +
-        '<p>لا توجد جوائز أو Why نشطة حالياً<br>' +
-        '<span style="color:rgba(168,85,247,.3);font-size:.8rem;">ترقّب الإعلانات على Discord!</span></p>' +
-      '</div>';
-    return;
-  }
-
-  wrap.innerHTML = '';
-  for (var idx = 0; idx < gws.length; idx++) {
-    var gw = gws[idx];
-    var parts   = await getGwParticipants(gw.id);
-    var joined  = s && parts.indexOf(s.username) !== -1;
-    var ended   = Date.now() > gw.endTime;
-    var typeClass = gw.type === 'why' ? 'gw-type-why' : 'gw-type-giveaway';
-    var typeLabel = gw.type === 'why' ? '🟢 Why' : '🎁 Giveaway';
-
-    var joinLabel, joinClass, joinDisabled;
-    if (ended) {
-      joinLabel = '⏰ انتهت الجائزة'; joinClass = 'ended'; joinDisabled = 'disabled';
-    } else if (!s) {
-      joinLabel = '🔒 سجّل دخولك للمشاركة'; joinClass = ''; joinDisabled = '';
-    } else if (joined) {
-      joinLabel = '✅ أنت مشارك!'; joinClass = 'joined'; joinDisabled = 'disabled';
-    } else {
-      joinLabel = '🎟️ اشتراك في الجائزة'; joinClass = ''; joinDisabled = '';
-    }
-
-    /* ── Admin controls ── */
-    var adminHtml = '';
-    if (s && isAdmin(s.username)) {
-      if (gw.winners_picked) {
-        /* Winner already announced: show only delete */
-        adminHtml =
-          '<div class="gw-admin-controls">' +
-            '<button class="gw-ctrl-btn del" onclick="deleteGiveaway(\'' + gw.id + '\')">🗑️ حذف الفعالية</button>' +
-          '</div>';
-      } else {
-        var pauseLabel = gw.paused ? '▶️ استئناف' : '⏸️ إيقاف';
-        var pauseClass = gw.paused ? 'resume' : 'pause';
-        adminHtml =
-          '<div class="gw-admin-controls">' +
-            '<button class="gw-ctrl-btn edit"  onclick="openGwEdit(\'' + gw.id + '\')">✏️ تعديل</button>' +
-            '<button class="gw-ctrl-btn ' + pauseClass + '" onclick="pauseGiveaway(\'' + gw.id + '\')">' + pauseLabel + '</button>' +
-            '<button class="gw-ctrl-btn del"   onclick="deleteGiveaway(\'' + gw.id + '\')">🗑️ حذف</button>' +
-          '</div>';
-      }
-    }
-    var editedTag = gw.editedBy
-      ? '<div class="gw-edited-tag">✏️ عُدِّل بواسطة ' + sanitizeHtml(gw.editedBy) + '</div>'
-      : '';
-
-    var card = document.createElement('div');
-    card.className = 'gw-card ' + typeClass + (gw.paused ? ' paused' : '');
-    card.id = 'gwcard_' + gw.id;
-    card.style.animationDelay = (idx * 100) + 'ms';
-    card.innerHTML =
-      (gw.paused ? '<div class="gw-paused-banner">⏸️ تم إيقاف الفعالية مؤقتاً</div>' : '') +
-      '<div class="gw-card-strip"></div>' +
-      (gw.image ? '<img class="gw-card-img" src="' + gw.image + '" alt="" onerror="this.style.display=\'none\'">' : '') +
-      '<div class="gw-card-body">' +
-        adminHtml +
-        editedTag +
-        '<span class="gw-badge">' + typeLabel + '</span>' +
-        '<div class="gw-prize-row">' +
-          '<div class="gw-prize-icon">' + (gw.emoji || '🎁') + '</div>' +
-          '<div>' +
-            '<div class="gw-prize-name">' + sanitizeHtml(gw.prize) + '</div>' +
-            '<div style="font-size:.72rem;color:rgba(168,85,247,.4);">👑 ' + parseInt(gw.winners||1) + ' فائز</div>' +
-          '</div>' +
-        '</div>' +
-        (gw.desc ? '<div class="gw-desc">' + sanitizeHtml(gw.desc) + '</div>' : '') +
-        '<div class="gw-timer-wrap">' +
-          '<div class="gw-timer-label">⏰ الوقت المتبقي</div>' +
-          '<div class="gw-timer-digits" id="timer_' + gw.id + '"></div>' +
-        '</div>' +
-        '<div class="gw-participants">' +
-          '<span>👥 المشاركون</span>' +
-          '<span class="gw-part-count" id="part_' + gw.id + '">' + parts.length + '</span>' +
-        '</div>' +
-        '<button class="gw-join-btn ' + joinClass + '" id="join_' + gw.id + '" ' + joinDisabled + ' onclick="joinGiveaway(\'' + gw.id + '\')">' +
-          joinLabel +
-        '</button>' +
-      '</div>';
-
-    wrap.appendChild(card);
-    if (gw.winners_picked && gw.winnersList) {
-      showWinnerOverlay(gw.id, gw.winnersList, gw.prize, gw.emoji);
-    } else {
-      gwPausedState[gw.id] = !!gw.paused; /* seed pause cache */
-      startCardTimer(gw.id, gw.endTime);
-    }
-  }
-}
-
-/* Show admin toggle only for logged-in users */
-function updateGwAdmin() {
-  var toggle = document.getElementById('gw-admin-toggle');
-  var s = getSession();
-  if (toggle) toggle.style.display = (s && isAdmin(s.username)) ? 'flex' : 'none';
-}
-/* Auto-refresh giveaways every 15s so all users see updates */
-setInterval(function(){ renderGiveaways(); }, 15000);
-
-/* Init on page load */
-window.addEventListener('load', function(){
-  seedAdminUsers();
-  renderGiveaways();
-  updateGwAdmin();
-});
-
-// ── SCROLL SAFETY: reset overflow if nothing is open ──
-setInterval(function(){
-  var eliteOpen   = document.querySelector('.elite-overlay.open');
-  var loginOpen   = document.getElementById('loginModal') && document.getElementById('loginModal').style.opacity === '1';
-  var mobileOpen  = document.getElementById('mobileMenu') && document.getElementById('mobileMenu').classList.contains('open');
-  if (!eliteOpen && !loginOpen && !mobileOpen) {
-    document.body.style.overflow = '';
-  }
-}, 500);
 
 </script>
 
