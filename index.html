@@ -6726,14 +6726,18 @@ setInterval(function(){
     return false;
   });
 
-  // منع النسخ
+  // منع النسخ (إلا من حقول الإدخال)
   document.addEventListener('copy', function(e) {
+    var tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return true;
     e.preventDefault();
     return false;
   });
 
-  // منع القص
+  // منع القص (إلا من حقول الإدخال)
   document.addEventListener('cut', function(e) {
+    var tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return true;
     e.preventDefault();
     return false;
   });
@@ -6741,13 +6745,21 @@ setInterval(function(){
   // منع اختصارات لوحة المفاتيح (Ctrl+C, Ctrl+U, Ctrl+S, F12, إلخ)
   document.addEventListener('keydown', function(e) {
     // منع Ctrl+C, Ctrl+X, Ctrl+U, Ctrl+S, Ctrl+A, Ctrl+P
+    var tag = e.target.tagName;
+    var inInput = (tag === 'INPUT' || tag === 'TEXTAREA');
     if (e.ctrlKey && (
-      e.key === 'c' || e.key === 'C' ||
-      e.key === 'x' || e.key === 'X' ||
       e.key === 'u' || e.key === 'U' ||
       e.key === 's' || e.key === 'S' ||
-      e.key === 'a' || e.key === 'A' ||
       e.key === 'p' || e.key === 'P'
+    )) {
+      e.preventDefault();
+      return false;
+    }
+    // Block copy/cut/select-all only outside inputs
+    if (!inInput && e.ctrlKey && (
+      e.key === 'c' || e.key === 'C' ||
+      e.key === 'x' || e.key === 'X' ||
+      e.key === 'a' || e.key === 'A'
     )) {
       e.preventDefault();
       return false;
@@ -6759,14 +6771,18 @@ setInterval(function(){
     }
   });
 
-  // منع تحديد النص بالسحب
+  // منع تحديد النص بالسحب (إلا في حقول الإدخال)
   document.addEventListener('selectstart', function(e) {
+    var tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return true;
     e.preventDefault();
     return false;
   });
 
-  // منع السحب والإفلات
+  // منع السحب والإفلات (إلا في حقول الإدخال)
   document.addEventListener('dragstart', function(e) {
+    var tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return true;
     e.preventDefault();
     return false;
   });
@@ -6881,33 +6897,20 @@ setInterval(function(){
   sanitizeHash();
   window.addEventListener('hashchange', sanitizeHash);
 
-  /* 12. SESSION INTEGRITY */
+  /* 12. SESSION INTEGRITY — Firebase handles auth */
   setInterval(function() {
     try {
-      var s = localStorage.getItem('ox_session');
-      if (s) {
-        var obj = JSON.parse(s);
-        if (obj && obj.role) { delete obj.role; localStorage.setItem('ox_session', JSON.stringify(obj)); }
-        if (obj && obj.username && /<|>|script|javascript|eval/i.test(obj.username)) { localStorage.removeItem('ox_session'); location.reload(); }
-      }
-      var users = localStorage.getItem('ox_users');
-      if (users) {
-        var arr = JSON.parse(users);
-        if (Array.isArray(arr)) {
-          var changed = false;
-          arr.forEach(function(u) { if (u && u.role==='admin' && u.username && ['coaster'].indexOf(u.username.toLowerCase())===-1) { delete u.role; changed=true; } });
-          if (changed) localStorage.setItem('ox_users', JSON.stringify(arr));
-        }
-      }
+      localStorage.removeItem('ox_session');
+      localStorage.removeItem('ox_users');
     } catch(e) {}
-  }, 5000);
+  }, 30000);
 
   /* 13. NETWORK MONITOR */
   try {
     var _oF = window.fetch;
     window.fetch = function(url, opts) {
       var u = String(url||'');
-      var ok = ['discord.com/api/webhooks','fonts.googleapis.com','cdn.discordapp.com','i.imgur.com','cdnjs.cloudflare.com'];
+      var ok = ['discord.com/api/webhooks','fonts.googleapis.com','cdn.discordapp.com','i.imgur.com','cdnjs.cloudflare.com','firestore.googleapis.com','identitytoolkit.googleapis.com','securetoken.googleapis.com','firebaseapp.com','firebase.googleapis.com','googleapis.com','gstatic.com','firebasestorage.app','firebaseio.com'];
       var allow = ok.some(function(a){return u.indexOf(a)!==-1;});
       if (u.indexOf('http')===0 && !allow) {
         try { var rh=new URL(u).hostname, ph=window.location.hostname; if(rh&&ph&&rh!==ph) return Promise.reject(new Error('Blocked')); } catch(e2){}
