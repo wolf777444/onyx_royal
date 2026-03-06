@@ -9,7 +9,7 @@
 <title>Onyx Royal — السيرفر الملكي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800;900&family=Cinzel:wght@700;900&display=swap&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --deep:#0f0520;--dark:#1e0a3c;--mid:#3b1070;--bright:#7c3aed;
@@ -127,7 +127,7 @@ h1{
   transition:max-height .7s cubic-bezier(.4,0,.2,1);
   background:rgba(20,7,45,.75);
   border:2px solid rgba(124,58,237,.35);border-top:none;
-  border-radius:0 0 20px 20px;backdrop-filter:blur(6px);
+  border-radius:0 0 20px 20px;backdrop-filter:blur(4px);
 }
 .apanel.open{max-height:2400px;}
 
@@ -333,7 +333,7 @@ footer em{color:var(--gold);font-style:normal;}
 }
 #profilePopup {
   position:fixed;inset:0;z-index:9998;
-  background:rgba(6,2,16,.85);backdrop-filter:blur(8px);
+  background:rgba(6,2,16,.85);backdrop-filter:blur(6px);
   display:flex;align-items:center;justify-content:center;
   padding:16px;
   opacity:0;pointer-events:none;
@@ -472,7 +472,7 @@ footer em{color:var(--gold);font-style:normal;}
   border-radius: 20px;
   padding: 18px 22px 16px;
   max-width: 230px;
-  backdrop-filter:blur(8px);
+  backdrop-filter: blur(6px);
   box-shadow: 0 0 40px rgba(245,200,66,.15), 0 20px 60px rgba(0,0,0,.5);
   animation: greetingAppear 1.2s 2s cubic-bezier(.34,1.56,.64,1) both;
   cursor: pointer;
@@ -708,7 +708,7 @@ footer em{color:var(--gold);font-style:normal;}
   gap: 14px;
   padding: 16px 18px 16px 18px;
   border-radius: 18px;
-  backdrop-filter:blur(8px);
+  backdrop-filter: blur(8px);
   pointer-events: all;
   overflow: hidden;
   cursor: pointer;
@@ -1217,7 +1217,7 @@ footer em{color:var(--gold);font-style:normal;}
 /* Edit modal */
 #gw-edit-modal {
   position: fixed; inset: 0; z-index: 99990;
-  background: rgba(6,2,16,.88); backdrop-filter:blur(8px);
+  background: rgba(6,2,16,.88); backdrop-filter: blur(6px);
   display: flex; align-items: center; justify-content: center;
   padding: 16px; opacity: 0; pointer-events: none;
   transition: opacity .35s;
@@ -1507,7 +1507,7 @@ footer em{color:var(--gold);font-style:normal;}
 .elite-overlay{
   position:fixed;inset:0;z-index:1000;
   background:rgba(8,3,20,.92);
-  backdrop-filter:blur(8px);
+  backdrop-filter:blur(6px);
   display:flex;flex-direction:column;
   align-items:center;
   overflow-y:auto;
@@ -1678,7 +1678,7 @@ footer em{color:var(--gold);font-style:normal;}
   border-radius:22px;
   padding:30px 18px 22px;
   text-align:center;
-  backdrop-filter:blur(6px);
+  backdrop-filter:blur(4px);
   cursor:default;
   transition:transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .4s,border-color .4s;
   border:1px solid rgba(168,85,247,.12);
@@ -1804,7 +1804,7 @@ footer em{color:var(--gold);font-style:normal;}
   border-radius: 28px;
   padding: 36px 24px 30px;
   text-align: center;
-  backdrop-filter:blur(8px);
+  backdrop-filter: blur(8px);
   border: 1px solid transparent;
   overflow: hidden;
   z-index: 1;
@@ -2134,7 +2134,7 @@ footer em{color:var(--gold);font-style:normal;}
   border-radius: 28px;
   padding: 36px 24px 30px;
   text-align: center;
-  backdrop-filter:blur(8px);
+  backdrop-filter: blur(8px);
   border: 1px solid transparent;
   overflow: hidden;
   z-index: 1;
@@ -2528,7 +2528,7 @@ canvas#cvs { position:fixed; inset:0; z-index:0; pointer-events:none; }
   border:1px solid rgba(168,85,247,.22);
   border-radius:50px;
   transition:all .3s;
-  backdrop-filter:blur(8px);
+  backdrop-filter:blur(6px);
 }
 .back-link:hover { background:rgba(124,58,237,.28); color:var(--white); border-color:rgba(168,85,247,.5); transform:translateX(4px); }
 .back-link svg { width:16px; height:16px; flex-shrink:0; }
@@ -2551,7 +2551,7 @@ canvas#cvs { position:fixed; inset:0; z-index:0; pointer-events:none; }
   border-radius:32px;
   overflow:hidden;
   background:rgba(15,5,32,.82);
-  backdrop-filter:blur(10px);
+  backdrop-filter:blur(8px);
   border:1px solid rgba(168,85,247,.18);
   box-shadow:
     0 40px 100px rgba(0,0,0,.6),
@@ -2995,7 +2995,7 @@ canvas#cvs { position:fixed; inset:0; z-index:0; pointer-events:none; }
   padding: 24px 6% 20px;
   display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
   position: sticky; top: 0; z-index: 10;
-  backdrop-filter:blur(8px);
+  backdrop-filter: blur(8px);
 }
 .mpage-close-btn {
   padding: 10px 18px; border-radius: 12px;
@@ -3089,7 +3089,7 @@ canvas#cvs { position:fixed; inset:0; z-index:0; pointer-events:none; }
 /* ══ MEMBER PROFILE POPUP ══ */
 #memberPopup {
   position:fixed;inset:0;z-index:10000;
-  background:rgba(6,2,16,.88);backdrop-filter:blur(8px);
+  background:rgba(6,2,16,.88);backdrop-filter:blur(6px);
   display:flex;align-items:center;justify-content:center;padding:16px;
   opacity:0;pointer-events:none;transition:opacity .35s;
 }
@@ -3420,7 +3420,7 @@ canvas#cvs { position:fixed; inset:0; z-index:0; pointer-events:none; }
 /* ══ BAN SCREEN ══ */
 #banScreen {
   position:fixed;inset:0;z-index:99997;
-  background:rgba(8,2,18,.97);backdrop-filter:blur(10px);
+  background:rgba(8,2,18,.97);backdrop-filter:blur(8px);
   display:none;align-items:center;justify-content:center;
   flex-direction:column;padding:32px;
 }
@@ -3644,61 +3644,92 @@ canvas#cvs { position:fixed; inset:0; z-index:0; pointer-events:none; }
     user-select: none !important;
   }
 
-/* ── PERFORMANCE OPTIMIZATIONS ── */
-#cvs { will-change: auto; }
-.bg-grad { will-change: auto; }
-nav { will-change: transform; contain: layout style; }
-.fc, .owner-card, .badge-card, .em-card {
-  will-change: transform;
-  contain: layout style paint;
+/* ══════════════════════════════════════════════════
+   BADGE PERFORMANCE FIX — Mobile & Low-end devices
+══════════════════════════════════════════════════ */
+
+/* On ALL devices: reduce badge hover to simple lift only */
+.badge-card:hover {
+  transform: translateY(-8px) scale(1.02) !important;
 }
-.apanel, .racc-panel { contain: layout style; }
-/* Reduce blur intensity on non-critical elements */
-.fc, .owner-card, .scard { backdrop-filter: none !important; }
-/* Smooth scrolling with hardware acceleration */
-html { scroll-behavior: smooth; }
-body { -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
-/* Disable heavy hover animations on touch devices */
+
+/* Slow down heavy animations */
+.badge-halo   { animation-duration: 20s !important; }
+.badge-halo-2 { animation-duration: 30s !important; }
+.badge-card::before { animation-duration: 8s !important; }
+.badge-name   { animation-duration: 6s !important; }
+.badge-shine  { animation-duration: 8s !important; }
+
+/* On mobile: kill ALL badge animations completely */
+@media (max-width: 768px), (hover: none) {
+  .badge-halo,
+  .badge-halo-2        { animation: none !important; display: none !important; }
+  .badge-shine         { animation: none !important; display: none !important; }
+  .badge-sparkle       { animation: none !important; display: none !important; }
+  .badge-name          { animation: none !important; background-size: auto !important; }
+  .badge-card::before  { animation: none !important; }
+  .badge-inner         { backdrop-filter: none !important; }
+  .badge-card          { 
+    animation: badgeIn .4s both !important;
+    transition: none !important;
+  }
+  .badge-card:hover    { transform: none !important; }
+  .badge-card:active   { transform: scale(.97) !important; }
+}
+
+/* Canvas: reduce on all devices */
+@media (max-width: 768px) {
+  #cvs { display: none !important; }
+  .bg-grad { position: absolute !important; }
+
+  /* Remove all backdrop-filter on mobile */
+  nav,
+  .apanel,
+  .badge-inner,
+  .owner-card,
+  .fc,
+  .scard,
+  #loginModalBox,
+  #mobileMenu,
+  .elite-overlay-inner,
+  .racc-panel { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+
+  /* Kill nav blur */
+  nav { background: rgba(15,5,32,.97) !important; }
+
+  /* Kill all spinning/floating on mobile */
+  .crown           { animation: none !important; }
+  .logo-ring       { animation: none !important; }
+  .card-border-top { animation: none !important; }
+  .card-shine      { display: none !important; }
+
+  /* Kill owner card effects */
+  .owner-card::before,
+  .owner-card::after { display: none !important; }
+  .owner-card { transition: none !important; animation: none !important; }
+
+  /* Kill feature card effects */
+  .fc::after { display: none !important; }
+  .fc { transition: none !important; }
+
+  /* Kill all box-shadows on mobile (GPU heavy) */
+  .fc, .scard, .badge-card, .owner-card { box-shadow: 0 2px 12px rgba(0,0,0,.4) !important; }
+}
+
+/* Touch devices: no hover effects at all */
 @media (hover: none) {
-  .fc:hover, .owner-card:hover, .badge-card:hover, .scard:hover {
+  .fc:hover, .owner-card:hover, .badge-card:hover, .scard:hover, .abtn:hover {
     transform: none !important;
     box-shadow: none !important;
+    border-color: inherit !important;
   }
-  .fc::after, .owner-card::before, .badge-card::before { display: none !important; }
-  * { animation-play-state: running; }
-  .badge-shine, .badge-sparkle, .halo-ring { display: none !important; }
 }
 
 
-@media (max-width: 768px) {
-  /* Disable expensive effects on mobile */
-  .badge-card::before, .owner-card::before,
-  .fc::before, .fc::after { display: none !important; }
-  
-  .badge-shine, .badge-sparkle,
-  .card-shine, .card-border-top { display: none !important; }
-  
-  /* Reduce all box-shadows on mobile */
-  .fc { box-shadow: none !important; }
-  .owner-card { box-shadow: 0 4px 16px rgba(0,0,0,.3) !important; }
-  .badge-card { box-shadow: 0 4px 16px rgba(0,0,0,.3) !important; }
-  
-  /* Remove blur on mobile completely */
-  nav { backdrop-filter: none !important; background: rgba(15,5,32,.95) !important; }
-  .apanel { backdrop-filter: none !important; }
-  .elite-overlay-inner { backdrop-filter: none !important; }
-  #loginModalBox { backdrop-filter: none !important; }
-  #mobileMenu { backdrop-filter: none !important; }
-  
-  /* Disable floating animations on mobile */
-  .crown { animation: none !important; }
-  @keyframes cfloat { 0%,100% { transform: none; } }
-  
-  /* Disable halo spins on mobile */
-  .halo-ring { animation: none !important; display: none !important; }
-  .badge-shine { animation: none !important; }
-  .logo-ring { animation: none !important; }
-}
+/* ── GPU COMPOSITING HINTS ── */
+nav { will-change: transform; }
+.badge-card, .owner-card, .fc { will-change: transform; contain: layout style paint; }
+.badge-halo, .badge-halo-2, .badge-card::before { will-change: transform; }
 
 </style>
 </head>
@@ -4210,7 +4241,7 @@ body { -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
           <li class="badge-req-item">لا يُمنح إلا مرة واحدة في السنة</li>
         </ul>
 
-        <div class="badge-difficulty">💎 &nbsp; نادر جداً — للأفذاذ فقط</div>
+        <div class="badge-difficulty">💎 &nbsp; نادر جداً — للمتميزين فقط</div>
         <div class="badge-corner">♛ ONYX ROYAL ♛</div>
       </div>
     </div>
@@ -5107,7 +5138,7 @@ if(window.innerWidth > 768){
   let W,H;
   function rsz(){W=c.width=innerWidth;H=c.height=innerHeight;}
   addEventListener('resize',rsz);rsz();
-  const N=55,P=[];
+  const N=40,P=[];
   for(let i=0;i<N;i++)P.push({
     x:Math.random()*innerWidth,y:Math.random()*innerHeight,
     r:Math.random()*1.5+.3,op:Math.random()*.5+.07,
@@ -5118,9 +5149,9 @@ if(window.innerWidth > 768){
   });
   const ORBS=[];
   let t=0;
-  let lastFrame=0;
+  let _lf=0;
   (function loop(ts){
-    if(ts-lastFrame<33){requestAnimationFrame(loop);return;}lastFrame=ts;
+    if(ts-_lf<34){requestAnimationFrame(loop);return;}_lf=ts;
     x.clearRect(0,0,W,H);t++;
 
     P.forEach(p=>{
@@ -5131,7 +5162,8 @@ if(window.innerWidth > 768){
       p.y+=p.dy+Math.cos(t*p.wf+p.ph)*p.wy;
       if(p.x<-4)p.x=W+4;if(p.x>W+4)p.x=-4;
       if(p.y<-4)p.y=H+4;if(p.y>H+4)p.y=-4;
-      x.beginPath();x.arc(p.x,p.y,sz,0,Math.PI*2);x.fillStyle=`rgba(255,255,255,${al})`;x.fill();
+      x.beginPath();x.arc(p.x,p.y,sz,0,Math.PI*2);
+      x.fillStyle=`rgba(255,255,255,${al})`;x.fill();
     });
     requestAnimationFrame(loop);
   })(0);
@@ -6558,7 +6590,7 @@ setInterval(function(){
 ══════════════════════════════════════════ -->
 <div id="loginModal" style="
   position:fixed;inset:0;z-index:9999;
-  background:rgba(6,2,16,.88);backdrop-filter:blur(8px);
+  background:rgba(6,2,16,.88);backdrop-filter:blur(6px);
   display:flex;align-items:center;justify-content:center;
   opacity:0;pointer-events:none;touch-action:none;padding:16px;
   transition:opacity .35s cubic-bezier(.4,0,.2,1);
@@ -6928,7 +6960,7 @@ setInterval(function(){
 
   /* 8. MOBILE LONG PRESS */
   var _tt;
-  document.addEventListener('touchstart', function(e) { _tt = setTimeout(function() { /* disabled */ }, 500); }, { passive: true });
+  document.addEventListener('touchstart', function(e) { _tt = setTimeout(function() {}, 500); }, { passive: true });
   document.addEventListener('touchend', function() { clearTimeout(_tt); });
   document.addEventListener('touchmove', function() { clearTimeout(_tt); });
 
@@ -7953,15 +7985,6 @@ document.addEventListener('DOMContentLoaded', function(){ updateAdminNavVisibili
 window.addEventListener('load', function(){ updateAdminNavVisibility(); });
 
 
-
-
-// ── PAUSE ANIMATIONS WHEN TAB HIDDEN ──
-document.addEventListener('visibilitychange', function() {
-  var style = document.body.style;
-  style.animationPlayState = document.hidden ? 'paused' : '';
-  var all = document.querySelectorAll('*');
-  for(var i=0;i<all.length;i++) all[i].style.animationPlayState = document.hidden ? 'paused' : '';
-});
 
 </script>
 
